@@ -77,3 +77,12 @@ Callithrix.fit <- stan(file = '../Stan/test.stan',
                          'sigma_argentata', 'sigma_humeralifera', 'sigma_pygmaea'),
                        init = Callithrix $ stan.start,
                        iter = 1000, chains = 1)
+
+Callithrix $ post <- extract(Callithrix.fit)
+
+par (mfrow = c(1, 2))
+color2D.matplot (cov2cor (Callithrix $ post $ sigma_kuhlii [1, ,]))
+color2D.matplot (cov2cor (Callithrix $ post $ sigma_kuhlii [500, ,]))
+
+X11()
+color2D.matplot (cov2cor (OneDef [['Callithrix_kuhlii']] $ ml.vcv))
