@@ -70,7 +70,7 @@ Callithrix $ stan.start <-
          )
        )
 
-Callithrix.fit <- stan(file = '../Stan/test.stan',
+Callithrix $ fit.basic <- stan(file = '../Stan/test.stan',
                        data = Callithrix $ stan.data,
                        pars = c('B', 'alpha', 'V', 'sigma_geoffroyi',
                          'sigma_kuhlii', 'sigma_jacchus', 'sigma_penicillata', 
@@ -78,11 +78,67 @@ Callithrix.fit <- stan(file = '../Stan/test.stan',
                        init = Callithrix $ stan.start,
                        iter = 1000, chains = 1)
 
-Callithrix $ post <- extract(Callithrix.fit)
+Callithrix $ post.basic <- extract(Callithrix $ fit.basic)
+
+plot (colMeans (Callithrix $ post.basic $ alpha), xaxt = 'n', xlab = '')
+
+for (i in 1:7)
+  points (1:39, colMeans (Callithrix $ post.basic $ B [, i, ]),
+          col = rainbow (7) [i], pch = 20)
+
+dim (Callithrix $ post.basic $ V)
+
+color2D.matplot (cov2cor (Callithrix $ post.basic $ V [4, , ]))
+
+Callithrix $ postVeigen <-
+  aaply (Callithrix $ post.basic $ V, 1, function (x) eigen (x) $ values)
+
+boxplot (Callithrix $ postVeigen)
+
+
 
 par (mfrow = c(1, 2))
-color2D.matplot (cov2cor (Callithrix $ post $ sigma_kuhlii [1, ,]))
-color2D.matplot (cov2cor (Callithrix $ post $ sigma_kuhlii [500, ,]))
+color2D.matplot (cov2cor (Callithrix $ post.basic $ sigma_kuhlii [1, ,]))
+color2D.matplot (cov2cor (Callithrix $ post.basic $ sigma_kuhlii [500, ,]))
 
 X11()
 color2D.matplot (cov2cor (OneDef [['Callithrix_kuhlii']] $ ml.vcv))
+
+
+Callithrix $ reduced <- list()
+Callithrix $ reduced <-
+  within (Callithrix $ reduced,
+          {
+            k <- 39
+            m <- 7
+            C <- Callithrix $ phyloVCV
+            ni <- Callithrix $ sample.sizes
+            ni_max <- max (ni)
+            X <- array (0, c (m, ni_max, k))
+            for (i in 1:m)
+              X [i, 1:ni [i], ] <-
+                OneDef [[which (grepl ('Callithrix', names (OneDef))) [i]]] $ local
+            id <- diag (k)
+            zeroes <- rep(0, times = k)
+            priorS <- post.vcv $ ss.grand.mean
+            priorX <- OneDef [['Callithrix_kuhlii']] $ mean
+          })
+
+Callithrix $ reduced.start <-
+  list('c1' = list(
+         'Xbar' = t(array (rep (OneDef [['Callithrix_kuhlii']] $ mean, 7), c(39, 7))),
+         'alpha' = OneDef [['Callithrix_kuhlii']] $ mean,
+         'Sigma_bm' = post.vcv $ ss.grand.mean,
+         'Sigma' = aperm (post.vcv $ ss [, , 32, 1:7], c(3, 1, 2))),
+       'c2' = list(
+         'Xbar' = t(array (rep (OneDef [['Callithrix_penicillata']] $ mean, 7), c(39, 7))),
+         'alpha' = OneDef [['Callithrix_jacchus']] $ mean,
+         'Sigma_bm' = post.vcv $ ss [, , 32, 1],
+         'Sigma' = aperm (post.vcv $ ss [, , 35, 8:14], c(3, 1, 2)))
+       )
+
+Callithrix $ fit.reduced <- stan(file = '../Stan/reduced.stan',
+                                 data = Callithrix $ reduced,
+                                 init = Callithrix $ reduced.start,
+                                 warmup = 500, iter = 1500, chains = 2)
+
