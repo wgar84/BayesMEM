@@ -100,3 +100,4 @@ Callithrix $ fit.ancnodes <- stan(file = '../Stan/ancnodes.stan',
                                  data = Callithrix $ ancnodes,
                                  init = Callithrix $ ancnodes.start,
                                  warmup = 500, iter = 1500, chains = 2, verbose = FALSE)
+
