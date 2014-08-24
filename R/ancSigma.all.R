@@ -39,7 +39,7 @@ All $ ancSigma <-
                 OneDef [[i]] $ local
             id <- diag (k)
             zeroes <- rep(0, times = k)
-            priorS <- post.vcv $ ss.mean
+            priorS <- post.vcv $ ss.mean [, , 44]
             priorX <- OneDef [['Homo_sapiens']] $ mean
           })
 
