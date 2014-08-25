@@ -30,7 +30,7 @@ Callithrix $ ancSigma <-
           {
             k <- 39
             m <- 7
-            C <- solve (vcvPhylo (extract.clade (Tree [[1]], 143), anc.nodes = TRUE))
+            invC <- solve (vcvPhylo (extract.clade (Tree [[1]], 143), anc.nodes = TRUE))
             ni <- Aux $ sample.size [which (grepl ('Callithrix', names (OneDef)))]
             ni_max <- max (ni)
             X <- array (0, c (m, ni_max, k))
