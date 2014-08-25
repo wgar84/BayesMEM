@@ -48,21 +48,24 @@ Callithrix $ ancSigma.start <-
          'Xbar' = t(array (rep (OneDef [['Callithrix_kuhlii']] $ mean, 12), c(39, 12))),
          'alpha' = OneDef [['Callithrix_kuhlii']] $ mean,
          'Sigma_bm' = post.vcv $ ss.grand.mean,
-         'Sigma' = post.vcv $ ss [, , 32, 1]),
-       'c2' = list(
-         'Xbar' = t(array (rep (OneDef [['Callithrix_penicillata']] $ mean, 12),
-           c(39, 12))),
-         'alpha' = OneDef [['Callithrix_jacchus']] $ mean,
-         'Sigma_bm' = post.vcv $ ss [, , 32, 1],
-         'Sigma' = post.vcv $ ss [, , 35, 19])
+         'Sigma' = post.vcv $ ss [, , 32, 1])
+       ## ,
+       ## 'c2' = list(
+       ##   'Xbar' = t(array (rep (OneDef [['Callithrix_penicillata']] $ mean, 12),
+       ##     c(39, 12))),
+       ##   'alpha' = OneDef [['Callithrix_jacchus']] $ mean,
+       ##   'Sigma_bm' = post.vcv $ ss [, , 32, 1],
+       ##   'Sigma' = post.vcv $ ss [, , 35, 19])
        )
 
 Callithrix $ fit.ancSigma <- stan(file = '../Stan/ancSigma.stan',
                                   data = Callithrix $ ancSigma,
+                                  init = Callithrix $ ancSigma.start,
                                   warmup = 1, iter = 1, chains = 1)
 
 Callithrix $ fit.fun <- function() stan(fit = Callithrix $ fit.ancSigma,
                                         data = Callithrix $ ancSigma,
+                                        init = Callithrix $ ancSigma.start,
                                         iter = 2000, thin = 100, chains = 1)
 
 Callithrix $ fit.parl <- foreach (i = 1:10) %dopar% Callithrix $ fit.fun()
