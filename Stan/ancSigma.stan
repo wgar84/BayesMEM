@@ -1,7 +1,7 @@
 data {
   int k; // traits
   int m; // taxa
-  cov_matrix[2 * (m - 1)] C; // phylo
+  matrix[2 * (m - 1),2 * (m - 1)] invC; // phylo inversa
   int ni[m]; // amostras
   int ni_max; // máximo amostra
   vector[k] X[m,ni_max]; // dados
@@ -22,7 +22,6 @@ parameters {
 model {
   matrix[2*(m-1),k] Xbar_center;
   real ldet_C;
-  matrix[2*(m-1),2*(m-1)] inv_C;
   real ldet_BM;
 
   matrix[k,k] inv_current; // reciclável
@@ -56,13 +55,11 @@ model {
   for (i in 1:(2*(m-1)))
     Xbar_center[i] <- to_row_vector(Xbar[i] - alpha);
   
-  ldet_C <- log_determinant(C);
+  ldet_C <- - log_determinant(invC);
   ldet_BM <- log_determinant(Sigma_bm);
   
-  inv_C <- inverse_spd(C);
-
   llik_cum  <- -0.5 * (trace_gen_quad_form(inverse_spd(Sigma_bm), 
-					   inv_C, Xbar_center) +
+					   invC, Xbar_center) +
 		       k * ldet_C + m * ldet_BM);
   
   // multinormal

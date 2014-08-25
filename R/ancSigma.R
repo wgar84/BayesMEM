@@ -30,7 +30,7 @@ Callithrix $ ancSigma <-
           {
             k <- 39
             m <- 7
-            C <- vcvPhylo (extract.clade (Tree [[1]], 143), anc.nodes = TRUE)
+            C <- solve (vcvPhylo (extract.clade (Tree [[1]], 143), anc.nodes = TRUE))
             ni <- Aux $ sample.size [which (grepl ('Callithrix', names (OneDef)))]
             ni_max <- max (ni)
             X <- array (0, c (m, ni_max, k))
@@ -59,8 +59,12 @@ Callithrix $ ancSigma.start <-
 
 Callithrix $ fit.ancSigma <- stan(file = '../Stan/ancSigma.stan',
                                   data = Callithrix $ ancSigma,
-                                  init = Callithrix $ ancSigma.start,
-                                  warmup = 1000, iter = 11000, chains = 2,
-                                  thin = 100)
+                                  warmup = 1, iter = 1, chains = 1)
+
+Callithrix $ fit.fun <- function() stan(fit = Callithrix $ fit.ancSigma,
+                                        data = Callithrix $ ancSigma,
+                                        iter = 2000, thin = 100, chains = 1)
+
+Callithrix $ fit.parl <- foreach (i = 1:10) %dopar% Callithrix $ fit.fun()
 
 save(Callithrix, file = 'Callithrix.RData')
