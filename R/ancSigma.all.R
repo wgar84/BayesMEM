@@ -23,9 +23,9 @@ attach ('../../covTensor/Work/post.vcv.RData')
 
 All <- list ()
 
-All $ ancSigma <- list()
-All $ ancSigma <-
-  within (All $ ancSigma,
+All $ oneSigma <- list()
+All $ oneSigma <-
+  within (All $ oneSigma,
           {
             k <- 39
             m <- 109
@@ -42,7 +42,7 @@ All $ ancSigma <-
             priorX <- OneDef [['Homo_sapiens']] $ mean
           })
 
-All $ ancSigma.start <-
+All $ oneSigma.start <-
   list('c1' = list(
          'Xbar' = t(array (rep (OneDef [['Homo_sapiens']] $ mean, 109), c(39, 109))),
          'alpha' = OneDef [['Alouatta_belzebul']] $ mean,
@@ -56,10 +56,17 @@ All $ ancSigma.start <-
          'Sigma' = post.vcv $ ss [, , 98, 19])
        )
 
-All $ fit.ancSigma <- stan(file = '../Stan/ancSigma_all.stan',
-                                  data = All $ ancSigma,
-                                  init = All $ ancSigma.start,
-                                  warmup = 1000, iter = 11000, chains = 2,
-                                  thin = 100)
+All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_noAnc.stan',
+                           data = All $ oneSigma,
+                           init = All $ oneSigma.start [1],
+                           warmup = 1, iter = 1, chains = 1)
+
+All $ func.oneSigma <-
+  function (chain)
+  stan (fit = All $ fit.oneSigma, data = All $ oneSigma,
+        init = chain, warmup = 500, iter = 1000, chains = 1)
+
+All $ fit.oneSigma.par <-
+  foreach (i = 1:2) %dopar% All $ func.oneSigma (All $ oneSigma.start [i])
 
 save(All, file = 'All.RData')
