@@ -46,24 +46,27 @@ All $ oneSigma.start <-
   list('c1' = list(
          'Xbar' = t(array (rep (OneDef [['Homo_sapiens']] $ mean, 109), c(39, 109))),
          'alpha' = OneDef [['Alouatta_belzebul']] $ mean,
-         'Sigma_bm' = post.vcv $ ss.grand.mean,
-         'Sigma' = post.vcv $ ss [, , 22, 1]),
+         'invSigma_bm' = solve(post.vcv $ ss.grand.mean),
+         'invSigma' = solve(post.vcv $ ss [, , 22, 1])),
        'c2' = list(
          'Xbar' = t(array (rep (OneDef [['Miopithecus_talapoin']] $ mean, 109),
            c(39, 109))),
          'alpha' = OneDef [['Gorilla_gorilla']] $ mean,
-         'Sigma_bm' = post.vcv $ ss [, , 102, 1],
-         'Sigma' = post.vcv $ ss [, , 98, 19])
+         'invSigma_bm' = solve(post.vcv $ ss [, , 102, 1]),
+         'invSigma' = solve(post.vcv $ ss [, , 98, 19]))
        )
 
 All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_noAnc.stan',
                            data = All $ oneSigma,
+                           pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                            init = All $ oneSigma.start [1],
                            warmup = 1, iter = 1, chains = 1)
 
 All $ func.oneSigma <-
   function (chain)
-  stan (fit = All $ fit.oneSigma, data = All $ oneSigma,
+  stan (fit = All $ fit.oneSigma,
+        data = All $ oneSigma,
+        pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
         init = chain, warmup = 500, iter = 1000, chains = 1)
 
 All $ fit.oneSigma.par <-

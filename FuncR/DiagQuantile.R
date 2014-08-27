@@ -10,16 +10,13 @@ DiagQuantile <- function (real.data, post.means, post.vcvs, at = c(0, 0.5, 1))
     dimnames (post.quant) [-1] <- dimnames (real.quant)
     names (dimnames (post.quant)) <- c('sample', 'variable', 'quantile')
     names (dimnames (real.quant)) <- c('variable', 'quantile')
-    post.quant <- melt (post.quant)
-    post.quant $ variable <- as.factor (post.quant $ variable)
-    post.quant $ quantile <- as.factor (post.quant $ quantile)
-    real.quant <- melt (real.quant)
-    real.quant $ variable <- as.factor (real.quant $ variable)
-    real.quant $ quantile <- as.factor (real.quant $ quantile)
+    post.quant <- data.frame (melt (post.quant))
+    real.quant <- data.frame (melt (real.quant))
     Plot <-
       ggplot (post.quant, aes (x = value)) +
         geom_histogram (aes (fill = quantile), position = 'identity', alpha = 0.5) +
           facet_wrap (~ variable, scales = 'free_x') +
-            geom_vline (aes (xintercept = value, colour = quantile), real.quant)
+            geom_vline (aes (xintercept = value, colour = quantile), real.quant) +
+              theme (axis.text = element_text (size=6))
     return (Plot)
   }
