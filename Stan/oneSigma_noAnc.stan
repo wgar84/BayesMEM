@@ -12,9 +12,9 @@ data {
 }
 
 transformed data {
-  matrix[m,m] inv_C;
+  cov_matrix[m] inv_C;
   real ldet_C;
-  matrix[k,k] precS;
+  cov_matrix[k] precS;
   
   ldet_C <- log_determinant(C);
   inv_C <- inverse_spd(C);
@@ -26,8 +26,8 @@ transformed data {
 parameters {
   vector[k] Xbar[m]; 
   vector[k] alpha;
-  matrix[k,k] invSigma_bm; // Brownian Motion Matrix
-  matrix[k,k] invSigma;
+  cov_matrix[k] invSigma_bm; // Brownian Motion Matrix
+  cov_matrix[k] invSigma;
   // int<lower=0,upper=100> lambdacent; // later
 }
 
