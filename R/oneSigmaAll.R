@@ -53,7 +53,7 @@ All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_cor.stan',
                            data = All $ oneSigma,
                            pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                            init = All $ oneSigma.start,
-                           warmup = 500 iter = 1000, chains = 1,
+                           warmup = 500, iter = 1000, chains = 1,
                            control = list (refresh = 1))
 
 save (All, file = 'All.RData')
