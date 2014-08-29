@@ -1,0 +1,215 @@
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> assignInNamespace(".help.ESS", help, ns=asNamespace("base"))
+> options(STERM='iESS', str.dendrogram.last="'", editor='emacsclient', show.error.locations=TRUE)
+> require (ape)
+Loading required package: ape
+> require (MCMCglmm)
+Loading required package: MCMCglmm
+Loading required package: Matrix
+Loading required package: coda
+Loading required package: lattice
+> require (Morphometrics)
+Loading required package: Morphometrics
+Loading required package: plyr
+> require (expm)
+Loading required package: expm
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+The following object is masked from ‘package:ape’:
+
+    balance
+
+> require (plyr)
+> require (plotrix)
+Loading required package: plotrix
+> require (doMC)
+Loading required package: doMC
+Loading required package: foreach
+foreach: simple, scalable parallel programming from Revolution Analytics
+Use Revolution R for scalability, fault tolerance and more.
+http://www.revolutionanalytics.com
+Loading required package: iterators
+Loading required package: parallel
+> registerDoMC (cores = 3)
+> #registerDoMC (cores = 8)
+> #registerDoMC (cores = 60)
+> require (reshape2)
+Loading required package: reshape2
+> require (ggplot2)
+Loading required package: ggplot2
+> require (rstan)
+Loading required package: rstan
+Loading required package: Rcpp
+Loading required package: inline
+
+Attaching package: ‘inline’
+
+The following object is masked from ‘package:Rcpp’:
+
+    registerPlugin
+
+rstan (Version 2.4.0, packaged: 2014-07-21 17:16:17 UTC, GitRev: c995bc8b9d67)
+
+Attaching package: ‘rstan’
+
+The following object is masked from ‘package:coda’:
+
+    traceplot
+
+> Sys.setenv(MAKEFLAGS = '-j2')
+> require (phytools)
+Loading required package: phytools
+Loading required package: maps
+
+Attaching package: ‘phytools’
+
+The following object is masked from ‘package:expm’:
+
+    expm
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> attach ('../../Databases/Reference.RData')
+> attach ('../../Databases/OneDef/ED.RData')
+> attach ('../../Databases/OneDef/OneDef.RData')
+> attach ('../../Databases/Tree.RData')
+> attach ('../../Databases/Aux.RData')
+> attach ('../../covTensor/Work/post.vcv.RData')
+> 
+> All <- list ()
+> 
+> All $ oneSigma <- list()
+> All $ oneSigma <-
++   within (All $ oneSigma,
++           {
++             k <- 39
++             m <- 109
++             C <- vcvPhylo (Tree [[1]], anc.nodes = FALSE)
++             ni <- Aux $ sample.size 
++             ni_max <- max (ni)
++             X <- array (0, c (m, k, ni_max))
++             for (i in 1:m)
++               X [i, , 1:ni [i]] <-
++                 OneDef [[i]] $ local
++             id <- diag (k)
++             zeroes <- rep(0, times = k)
++             priorS <- post.vcv $ ss.mean [, , 44]
++             priorX <- OneDef [['Homo_sapiens']] $ mean
++           })
+> 
+> All $ oneSigma.start <-
++   list('c1' = list(
++          'Xbar' = t(array (rep (OneDef [['Homo_sapiens']] $ mean, 109), c(39, 109))),
++          'alpha' = OneDef [['Alouatta_belzebul']] $ mean,
++          'invSigma_bm' = solve(post.vcv $ ss.grand.mean),
++          'invSigma' = solve(post.vcv $ ss [, , 22, 1])),
++        'c2' = list(
++          'Xbar' = t(array (rep (OneDef [['Miopithecus_talapoin']] $ mean, 109),
++            c(39, 109))),
++          'alpha' = OneDef [['Gorilla_gorilla']] $ mean,
++          'invSigma_bm' = solve(post.vcv $ ss [, , 102, 1]),
++          'invSigma' = solve(post.vcv $ ss [, , 98, 19]))
++        )
+> All $ oneSigma <- list()
+> All $ oneSigma <-
++   within (All $ oneSigma,
++           {
++             k <- 39
++             m <- 109
++             C <- vcvPhylo (Tree [[1]], anc.nodes = FALSE)
++             ni <- Aux $ sample.size 
++             ni_max <- max (ni)
++             X <- array (0, c (m, ni_max, k))
++             for (i in 1:m)
++               X [i, , 1:ni [i]] <-
++                 OneDef [[i]] $ local
++             id <- diag (k)
++             zeroes <- rep(0, times = k)
++             priorS <- post.vcv $ ss.mean [, , 44]
++             priorX <- OneDef [['Homo_sapiens']] $ mean
++           })
+Error in `[<-`(`*tmp*`, i, , 1:ni[i], value = c(5.20639598101936, 5.21000998449596,  (from #10) : 
+  subscript out of bounds
+> 
+> All $ oneSigma.start <-
++   list('c1' = list(
++          'Xbar' = t(array (rep (OneDef [['Homo_sapiens']] $ mean, 109), c(39, 109))),
++          'alpha' = OneDef [['Alouatta_belzebul']] $ mean,
++          'Sigma_bm' = post.vcv $ ss.grand.mean,
++          'Sigma' = post.vcv $ ss [, , 22, 1]),
++        'c2' = list(
++          'Xbar' = t(array (rep (OneDef [['Miopithecus_talapoin']] $ mean, 109),
++            c(39, 109))),
++          'alpha' = OneDef [['Gorilla_gorilla']] $ mean,
++          'Sigma_bm' = post.vcv $ ss [, , 102, 1],
++          'Sigma' = post.vcv $ ss [, , 98, 19])
++        )
+> All $ fit.oneSigma <- stan(file = '../Stan/ancSigma_all.stan',
++                            data = All $ oneSigma,
++                            pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
++                            init = All $ oneSigma.start [1],
++                            warmup = 1, iter = 20, chains = 1,
++                            control = list (refresh = 1))
+
+TRANSLATING MODEL 'ancSigma_all' FROM Stan CODE TO C++ CODE NOW.
+Error in stanc(file = file, model_code = model_code, model_name = model_name,  : 
+  failed to parse Stan model 'ancSigma_all' with error message:
+EXPECTATION FAILURE - DIAGNOSTIC(S) FROM PARSER:
+
+no matches for function name="multi_normal_log"
+    arg 0 type=matrix
+    arg 1 type=vector
+    arg 2 type=matrix
+available function signatures for multi_normal_log:
+0.  multi_normal_log(vector, vector, matrix) : real
+1.  multi_normal_log(vector, row vector, matrix) : real
+2.  multi_normal_log(row vector, vector, matrix) : real
+3.  multi_normal_log(row vector, row vector, matrix) : real
+4.  multi_normal_log(vector, vector[1], matrix) : real
+5.  multi_normal_log(vector, row vector[1], matrix) : real
+6.  multi_normal_log(row vector, vector[1], matrix) : real
+7.  multi_normal_log(row vector, row vector[1], matrix) : real
+8.  multi_normal_log(vector[1], vector, matrix) : real
+9.  multi_normal_log(vector[1], row vector, matrix) : real
+10.  multi_normal_log(row vector[1], vector, matrix) : real
+11.  multi_normal_log(row vector[1], row vector, matrix) : real
+12.  multi_nor
+> get_cppo()
+$mode
+[1] "fast"
+
+$NDEBUG
+[1] FALSE
+
+$DEBUG
+[1] FALSE
+
+> 
