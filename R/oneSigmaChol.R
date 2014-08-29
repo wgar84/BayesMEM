@@ -49,7 +49,7 @@ All $ oneSigma.start <-
          'sigma' = diag (post.vcv $ ss.grand.mean)))
          
 
-All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_cor.stan',
+All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_chol.stan',
                            data = All $ oneSigma,
                            pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                            init = All $ oneSigma.start,
