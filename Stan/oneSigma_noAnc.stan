@@ -5,78 +5,95 @@ data {
   int ni[m]; // amostras
   int ni_max; // máximo amostra
   vector[k] X[m,ni_max]; // dados
-  cov_matrix[k] id; 
-  vector[k] zeroes;
   vector[k] priorX;
   cov_matrix[k] priorS;
 }
 
 transformed data {
-  cov_matrix[m] inv_C;
-  real ldet_C;
-  cov_matrix[k] precS;
+  vector[k] zero_vector;
+  real ldetC;
+  cov_matrix[m] invC;
   
-  ldet_C <- log_determinant(C);
-  inv_C <- inverse_spd(C);
+  for (i in 1:k)
+    zero_vector[i] <- 0;
 
-  precS <- inverse_spd(priorS);
-
+  ldetC <- log_determinant(C);
+  invC <- inverse_spd(C);
+ 
 }
 
 parameters {
   vector[k] Xbar[m]; 
   vector[k] alpha;
-  cov_matrix[k] invSigma_bm; // Brownian Motion Matrix
-  cov_matrix[k] invSigma;
-  // int<lower=0,upper=100> lambdacent; // later
+  
+  cholesky_factor_corr[k] Gamma; // Sigma = sGG's
+  real<lower=0> sigma[k];
+
+  cholesky_factor_corr[k] Gamma_bm; 
+  real<lower=0> sigma_bm[k];
+
+}
+
+transformed parameters {
+  vector[k] eX[m,ni_max];
+  matrix[m,k] eXbar;
+  
+  for(i in 1:m)
+    {
+      eXbar[i] <- to_row_vector ((Xbar[i] - alpha) ./ to_vector(sigma_bm));
+      for(j in 1:ni[i])
+	eX[i,j] <- (X[i,j] - Xbar[i]) ./ to_vector(sigma);
+    }
 }
 
 model {
-  matrix[m,k] Xbar_center;
-  
+
   real ldet_BM;
-
-  real ldet_current;
-  real llik_cum; 
-
-  // priors
-  
-  invSigma_bm ~ wishart(k, precS);
-  invSigma ~ wishart(k, precS);
+  real llik_BM; 
+    
+  /** priors **/
   
   for (i in 1:m)
-    Xbar[i] ~ multi_normal_prec(priorX, precS);
+    Xbar[i] ~ multi_normal(priorX, priorS);
   
-  alpha ~ multi_normal_prec(priorX, precS);
+  alpha ~ multi_normal(priorX, priorS);
   
-  for (i in 1:m)
-    Xbar_center[i] <- to_row_vector(Xbar[i] - alpha);
+  // lambda ~ uniform(0, 1);
   
-
-  ldet_BM <- - log_determinant(invSigma_bm);
-  
-  llik_cum  <- -0.5 * (trace_gen_quad_form(invSigma_bm, inv_C, Xbar_center) +
-		       k * ldet_C + m * ldet_BM);
-  
-  ldet_current <- - log_determinant(invSigma);
-  
-
-  for (i in 1:m)
+  for (i in 1:k)
     {
-      for (j in 1:(ni[i]))
-	llik_cum <- llik_cum - 0.5 * (ldet_current + 
-				      quad_form_sym(invSigma, X[i][j] - Xbar[i]));
+      sigma[i] ~ chi_square(min(ni) - 1);
+      sigma_bm[i] ~ chi_square(min(ni) - 1);
     }
-     
-  increment_log_prob(llik_cum);
+
+  // Gamma ~ ldk_corr_chol(1);
+  // Gamma_bm ~ ldk_corr_chol(1);
+
+  /** brownian **/
+
+  ldet_BM <- 2 * log_determinant(Gamma_bm); 
+  ldet_BM <- ldet_BM + (2 * sum(sigma_bm));
+  // jacobian of transform to correlation matrix
+
+  llik_BM  <- -0.5 * (trace_gen_quad_form(inverse_spd(Gamma_bm * Gamma_bm'), C, eXbar) +
+		      k * ldetC + m * ldet_BM);
+
+  increment_log_prob(llik_BM);
+  
+  /** pops **/
+
+  for (i in 1:m)
+    for (j in 1:(ni[i]))
+      eX[i,j] ~ multi_normal_cholesky(zero_vector, Gamma);
+
+  increment_log_prob(- k * sum(sigma)); 
+  // jacobian of transform to correlation matrix
 }
 
-generated quantities{
+generated quantities {
   cov_matrix[k] Sigma;
   cov_matrix[k] Sigma_bm;
   
-  Sigma_bm <- inverse_spd(invSigma_bm);
-  Sigma <- inverse_spd(invSigma);
-  
+  Sigma <- quad_form(Gamma * Gamma', diag_matrix(to_vector(sigma)));
+  Sigma_bm <- quad_form(Gamma_bm * Gamma_bm', diag_matrix(to_vector(sigma_bm)));
 }
-
