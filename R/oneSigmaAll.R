@@ -20,7 +20,16 @@ attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
 attach ('../../covTensor/Work/post.vcv.RData')
 
+source ('../FuncR/mainModel.R')
+
 All <- list ()
+
+All $ fit.SA <- mainModel (110, OneDef, Tree [[1]], 'local',
+                           list ('mean' = OneDef [['Cebus_apella']] $ mean,
+                                 'vcv' = post.vcv $ ss.grand.mean),
+                           model = 'oneSigma_Anc',
+                           pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+                           warmup = 50, iter = 100)
 
 All $ oneSigma <- list()
 All $ oneSigma <-
@@ -28,7 +37,7 @@ All $ oneSigma <-
           {
             k <- 39
             m <- 109
-            C <- vcvPhylo (Tree [[1]], anc.nodes = FALSE)
+            C <- vcvPhylo (Tree [[1]], anc.nodes = TRUE)
             ni <- Aux $ sample.size 
             ni_max <- max (ni)
             X <- array (0, c (m, ni_max, k))
@@ -38,22 +47,5 @@ All $ oneSigma <-
             priorS <- post.vcv $ ss.grand.mean
             priorX <- OneDef [['Cebus_apella']] $ mean
           })
-
-All $ oneSigma.start <-
-  list('c1' = list(
-         'Xbar' = t(array (rep (OneDef [['Cebus_apella']] $ mean, 109), c(39, 109))),
-         'alpha' = OneDef [['Cebus_apella']] $ mean,
-         'Gamma_bm' = cov2cor (post.vcv $ ss.grand.mean),
-         'Gamma' = cov2cor (post.vcv $ ss.grand.mean),
-         'sigma_bm' = diag (post.vcv $ ss.grand.mean),
-         'sigma' = diag (post.vcv $ ss.grand.mean)))
-         
-
-All $ fit.oneSigma <- stan(file = '../Stan/oneSigma_cor.stan',
-                           data = All $ oneSigma,
-                           pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                           init = All $ oneSigma.start,
-                           warmup = 500, iter = 1000, chains = 1,
-                           control = list (refresh = 1))
 
 save (All, file = 'All.RData')

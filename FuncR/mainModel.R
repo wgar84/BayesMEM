@@ -18,7 +18,7 @@ mainModel <-
       within (stan.data,
               {
                 k <- ncol (raw.data [[1]])
-                m <- ncol (C)
+                m <- length (subtree $ tip.label)
                 ni <- laply (raw.data, function (L) nrow (L))
                 ni_max <- max (ni)
                 X <- array (0, c(m, ni_max, k))

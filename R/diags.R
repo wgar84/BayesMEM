@@ -58,67 +58,54 @@ for (i in 1:7)
         theme (axis.text = element_text (size=6)))
 dev.off (dev.cur ())
 
-CallPost $ ext $ Sigma <- aperm (CallPost $ ext $ Sigma, c(2, 3, 1))
-
-CallPost $ projSigma <- aaply (CallPost $ ext $ Sigma, 3, ProjectMatrix,
-                               etd = etd.ss $ mean.etd,
-                               mean.matrix = post.vcv $ ss.grand.mean, .parallel = TRUE)
-
-
-CallPost $ projSigma_bm <- aaply (CallPost $ ext $ Sigma_bm, 1, ProjectMatrix,
-                                  etd = etd.ss $ mean.etd,
-                                  mean.matrix = post.vcv $ ss.grand.mean, .parallel = TRUE)
-
-C.allSigma $ proj <-
-  laply (C.allSigma $ post [4:10],
-         function (L) aaply (L, 1, ProjectMatrix,
-                             etd = etd.ss $ mean.etd,
-                             mean.matrix = post.vcv $ ss.grand.mean), .parallel = TRUE)
-
-
-Callithrix.who <- which (grepl ('Callithrix', names (OneDef)))
-
-plot (etd.ss $ mean.etd $ projection [, 1:2], 
-      pch = 20, cex = 1, xlim = c (-10, 12), ylim = c(-2.5, 2), xlab = 'PM1', ylab = 'PM2')
-
-points (etd.ss $ mean.etd $ projection [Callithrix.who, 1:2], col = hsv (1:7/7, 1, 1, 1),
-      pch = 20, cex = 2, xlim = c (-10, 12), ylim = c(-2.5, 2), xlab = 'PM1', ylab = 'PM2')
-
-
-text(x = etd.ss $ mean.etd $ projection [Callithrix.who, 1:2],
-     labels = names (OneDef) [Callithrix.who], pos = 2, cex = 0.5, )
-
-for (i in Callithrix.who)
-  {
-    hull <- chull (t (etd.ss $ post.vcv.mean.proj [1:2, i, ]))
-    polygon (t (etd.ss $ post.vcv.mean.proj [1:2, i, ]) [hull , ],
-             col = hsv ((i-31)/7, 1, 1, 0.3), border = hsv ((i-31)/7, 1, 1, 0.5), lwd = 2)
-  }
-
-hull <- chull (CallPost $ projSigma [, 1:2])
-
-polygon (CallPost $ projSigma [hull, 1:2],
-         col = hsv (1, 0, 0.8, 0.3), border = hsv (1, 0, 0.8, 0.5), lwd = 2)
-
-hull <- chull (t(etd.ss $ post.anc.proj [1:2, , '143']))
-
-polygon (t(etd.ss $ post.anc.proj [1:2, hull, '143']),
-         col = hsv (1, 0, 0.5, 0.1), border = hsv (1, 0, 0.5, 0.15), lwd = 2)
-
-
-for (i in 1:7)
-  {
-    hull <- chull (C.allSigma $ proj[i, , 1:2])
-    polygon (C.allSigma $ proj[i, hull, 1:2],
-             col = hsv (i/7, 1, 1, 0.3), border = hsv (i/7, 1, 1, 0.5), lwd = 2)
-  }
-
-legend ('topleft', col = hsv ((1:7)/7, 1, 1, 0.5), pch = '', lty = 1, lwd = 3,
-        legend = Tree [[1]] $ tip.label [Callithrix.who], bty = 'n', cex = 1)
-
-X11()
-plot (extract.clade(Tree [[1]], 143))
-
 #### a posteriori pro modelo completo não bate com a posteriori dos modelos pra espécie
 #### bom, isso até faz sentido se eu considerar a estrutura de cada modelo...
-#### vou ter que esperar pra ver como ficam as posterioris associadas a cada modelo de W anc.
+#### vou ter que esperar pra ver como ficam as posterioris associadas
+#### a cada modelo de W anc.
+
+CallTree <- extract.clade (Tree [[1]], 143)
+
+paste (c(CallTree $ tip.label, as.character (8:13)) [CallTree $ edge [, 1]],
+       c(CallTree $ tip.label, as.character (8:13)) [CallTree $ edge [, 2]], sep = '-')
+
+CallPost $ response <- PostDeltaZ(CallPost $ ext, CallTree, TRUE)
+
+names (dimnames (CallPost $ response $ Beta)) <- c('iter', 'edge', 'trait')
+
+dimnames (CallPost $ response $ Beta) [[3]] <- colnames (OneDef [[1]] $ local)
+dimnames (CallPost $ response $ Beta) [[2]] <-
+  paste (c(CallTree $ tip.label, as.character (8:13)) [CallTree $ edge [, 1]],
+         c(CallTree $ tip.label, as.character (8:13)) [CallTree $ edge [, 2]], sep = '-')
+
+dimnames (CallPost $ response $ Beta) [[2]] <-
+  gsub ('Callithrix_', '',
+        dimnames (CallPost $ response $ Beta) [[2]])
+
+names (dimnames (CallPost $ response $ DeltaZ)) <-
+  names (dimnames (CallPost $ response $ Beta))
+
+dimnames (CallPost $ response $ DeltaZ) <- dimnames (CallPost $ response $ Beta)
+
+CallPost $ beta.df <- melt (CallPost $ response $ Beta)
+
+head (CallPost $ beta.df)
+
+pdf (file = 'beta_i_logCS.pdf', width = 10, height = 8)
+
+layout (array (c(1, 2, 3, 3), c (2, 2)))
+
+plot (CallTree)
+nodelabels()
+
+boxplot (OneDef [[32]] $ local [, 'logCS'], xlim = c (0, 8), ylim = c (4.2, 4.7), at = 1)
+for (i in 33:38)
+  boxplot(OneDef [[i]] $ local [, 'logCS'], at = i - 31, add = TRUE)
+axis(side = 1, labels = names (OneDef) [32:38], las = 3, at = 1:7, cex.axis = 0.5)
+
+boxplot (CallPost $ response $ Beta [, , 'logCS'], las = 3, cex.axis = 0.7,
+         main = 'Beta_i (logCS)')
+
+dev.off (dev.cur ())
+
+
+
