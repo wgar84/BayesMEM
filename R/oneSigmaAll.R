@@ -29,6 +29,6 @@ All $ fit.SA <- mainModel (110, OneDef, Tree [[1]], 'local',
                                  'vcv' = post.vcv $ ss.grand.mean),
                            model = 'oneSigma_Anc',
                            pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                           warmup = 50, iter = 100)
+                           warmup = 500, iter = 1000, thin = 5)
 
 save (All, file = 'All.RData')
