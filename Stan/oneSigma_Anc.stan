@@ -77,7 +77,7 @@ model {
   // jacobian of transform to correlation matrix
 
   llik_BM  <- - 0.5 * (trace_gen_quad_form(inverse_spd(Gamma_bm * Gamma_bm'), C, eXbar) +
-		       k * ldetC) + m * ldet_BM;
+		       k * ldetC) - m * ldet_BM;
 
   increment_log_prob(llik_BM);
   
