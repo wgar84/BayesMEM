@@ -20,7 +20,7 @@ attach ('../../Databases/OneDef/OneDef.RData')
 attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
 attach ('../../covTensor/Work/post.vcv.RData')
-attach  ('../../covTensor/Work/etd.all.RData')
+attach ('../../covTensor/Work/etd.all.RData')
 
 
 source ('../../covTensor/Func/MeanMatrix.R')
@@ -31,6 +31,10 @@ source ('../../covTensor/Func/BuildSigma.R')
 source ('../../covTensor/Func/EigenTensorDecomposition.R')
 source ('../../covTensor/Func/RebuildETD.R')
 source ('../FuncR/DiagQuantile.R')
+source ('../../Func/plot.R')
+
+source ('../../Func/splines.R')
+
 
 C.allSigma <- Callithrix
 rm (list = ls(pat = 'Callithrix'))
@@ -108,4 +112,93 @@ boxplot (CallPost $ response $ Beta [, , 'logCS'], las = 3, cex.axis = 0.7,
 dev.off (dev.cur ())
 
 
+dim (CallPost $ response $ Beta)
 
+CallPost $ beta.cred <-
+  aaply (CallPost $ response $ Beta, c(2, 3), quantile, probs = c(0.025, 0.975))
+
+CallPost $ beta.zero.out.df <-
+  melt (aaply (CallPost $ beta.cred, c(1, 2), prod) > 0)
+
+CallPost $ beta.zero.out.df $ value <-
+  as.factor (c('', '*') [CallPost $ beta.zero.out.df $ value + 1])
+
+par (mfrow = c(1, 2))
+
+X11()
+plot (CallTree)
+nodelabels()
+
+ggplot(CallPost $ beta.df, aes (x = edge, y = value)) +
+  geom_boxplot (outlier.shape = NA) + facet_wrap(~ trait, scales = 'free_y') +
+  theme(axis.text.x = element_text(angle = 90, size = 6, hjust = 1))
+
+### DRIFTSEL
+
+par (mfrow = c(1, 2))
+
+boxplot (aaply (CallPost $ ext $ Sigma, 1, function (x) eigen(x)$values), main = 'W')
+abline (h = 0)
+
+boxplot (aaply (CallPost $ ext $ Sigma_bm, 1, function (x) eigen(x)$values), main = 'B')
+abline (h = 0)
+
+CallPost $ driftsel <- list ()
+
+CallPost $ driftsel $ evalW  <-
+  aaply (CallPost $ ext $ Sigma, 1, function (x) eigen(x)$values)
+
+CallPost $ driftsel $ evalB  <-
+  aaply (CallPost $ ext $ Sigma_bm, 1, function (x) eigen(x)$values)
+
+### cov (b, w) / var (w)
+
+CallPost $ driftsel <-
+  within (CallPost $ driftsel, 
+          eval.slopes <- aaply (1:100, 1, function (i)
+                                coef (lm (log (evalB[i, 1:6]) ~ log (evalW[i, 1:6]))) [2]))
+                                
+
+qplot (CallPost $ driftsel $ eval.slopes, geom = 'histogram')
+
+par (mfrow = c(1, 2))
+
+boxplot (aaply (CallPost $ ext $ Sigma [, -1, -1], 1,
+                function (x) eigen(x)$values), main = 'W')
+abline (h = 0)
+
+boxplot (aaply (CallPost $ ext $ Sigma_bm [, -1, -1], 1,
+                function (x) eigen(x)$values), main = 'B')
+abline (h = 0)
+
+## CallPost $ driftsel.ns <- list ()
+
+## CallPost $ driftsel.ns $ evalW  <-
+##   aaply (CallPost $ ext $ Sigma[, -1, -1], 1, function (x) eigen(x)$values)
+
+## CallPost $ driftsel.ns $ evalB  <-
+##   aaply (CallPost $ ext $ Sigma_bm[, -1, -1], 1, function (x) eigen(x)$values)
+
+## ### cov (b, w) / var (w)
+
+## CallPost $ driftsel.ns <-
+##   within (CallPost $ driftsel.ns, 
+##           eval.slopes <- aaply (1:100, 1, function (i)
+##                                 coef (lm (log (evalB[i, 1:6]) ~ log (evalW[i, 1:6]))) [2]))
+                                
+
+## qplot (CallPost $ driftsel.ns $ eval.slopes, geom = 'histogram')
+
+CallPost $ driftsel $ evecW <-
+  aaply (CallPost $ ext $ Sigma, 1,
+         function (x) eigen (x) $ vectors [, 1:6])
+
+CallPost $ driftsel $ Gamma <-
+  aaply (1:100, 1, function (i)
+         {
+           t (CallPost $ driftsel $ evecW [i, , ]) %*%
+             CallPost $ ext $ Sigma_bm [i, , ] %*%
+               CallPost $ driftsel $ evecW [i, , ]
+         })
+
+dim(CallPost $ driftsel $ Gamma)
