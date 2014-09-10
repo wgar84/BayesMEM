@@ -19,7 +19,7 @@ attach ('../../Databases/OneDef/ED.RData')
 attach ('../../Databases/OneDef/OneDef.RData')
 attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
-attach ('../../covTensor/Work/post.vcv.RData')
+# attach ('../../covTensor/Work/post.vcv.RData')
 
 Callithrix <- list ()
 
