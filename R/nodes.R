@@ -21,25 +21,9 @@ attach ('../../covTensor/Work/post.vcv.RData')
 
 source ('../FuncR/mainModel.R')
 
-All <- list ()
-
-fit.SA <- mainModel(110, OneDef, Tree [[1]], 'local',
-                    list ('mean' = OneDef [['Cebus_apella']] $ mean,
-                          'vcv' = post.vcv $ ss.grand.mean),
-                    model = 'oneSigma_Anc',
-                    pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                    warmup = 500, iter = 1000, thin = 5)
-
-save (All, file = 'All.RData')
-
-plot (Tree [[1]], direction = 'upwards', cex = 0.5)
-nodelabels(cex = 0.7)
-
-str (Tree [[1]])
-
 Nodes <- list ()
 
-### fazer modelo oneSigma_noAnc
+### fazer modelo oneSigma_Anc
 Nodes $ intermediate <- c(111, 112, 113, 115, 117, 121, 122, 123,
                           127, 129, 131, 132, 133, 134, 137, 138,
                           139, 141, 142, 143, 144, 147, 149, 150,
@@ -53,3 +37,24 @@ Nodes $ intermediate <- c(111, 112, 113, 115, 117, 121, 122, 123,
 Nodes $ terminal <- c(114, 115, 117, 123, 128, 129, 133, 134,
                       141, 149, 152, 157, 164, 175, 181, 199, 210)
 
+Nodes $ inter.model <-
+  alply (Nodes $ intermediate, 1, mainModel,
+         main.data = OneDef, tree = Tree [[1]], what = 'local',
+         prior.list = list ('mean' = OneDef [['Cebus_apella']] $ mean,
+           'vcv' = post.vcv $ ss.grand.mean),
+         model = 'oneSigma_Anc',
+         pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+         warmup = 500, iter = 1000, thin = 5, .parallel = TRUE)
+
+save (Nodes, file = 'Nodes.RData')
+
+Nodes $ term.model <-
+  alply (Nodes $ terminal, 1, mainModel,
+         main.data = OneDef, tree = Tree [[1]], what = 'local',
+         prior.list = list ('mean' = OneDef [['Cebus_apella']] $ mean,
+           'vcv' = post.vcv $ ss.grand.mean),
+         model = 'multiSigma_noAnc',
+         pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+         warmup = 500, iter = 1000, thin = 5, .parallel = TRUE)
+
+save (Nodes, file = 'Nodes.RData')
