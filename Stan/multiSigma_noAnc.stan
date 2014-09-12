@@ -53,8 +53,8 @@ model {
     
   /** priors **/
   
-  for (i in 1:m)
-    Xbar[i] ~ multi_normal(priorX, priorS);
+  // for (i in 1:m)
+  //   Xbar[i] ~ multi_normal(priorX, priorS);
   
   alpha ~ multi_normal(priorX, priorS);
   

@@ -23,12 +23,12 @@ source ('../FuncR/mainModel.R')
 
 All <- list ()
 
-All $ fit.SA <- mainModel (110, OneDef, Tree [[1]], 'local',
-                           list ('mean' = OneDef [['Cebus_apella']] $ mean,
-                                 'vcv' = post.vcv $ ss.grand.mean),
-                           model = 'oneSigma_Anc',
-                           pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                           warmup = 500, iter = 1000, thin = 5)
+fit.SA <- mainModel (110, OneDef, Tree [[1]], 'local',
+                     list ('mean' = OneDef [['Cebus_apella']] $ mean,
+                           'vcv' = post.vcv $ ss.grand.mean),
+                     model = 'oneSigma_Anc',
+                     pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+                     warmup = 500, iter = 1000, thin = 5)
 
 save (All, file = 'All.RData')
 
