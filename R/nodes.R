@@ -37,8 +37,10 @@ Nodes $ intermediate <- c(111, 112, 113, 115, 117, 121, 122, 123,
 Nodes $ terminal <- c(114, 115, 117, 123, 128, 129, 133, 134,
                       141, 149, 152, 157, 164, 175, 181, 199, 210)
 
+safe.mainModel <- failwith (NULL, mainModel, FALSE)
+
 Nodes $ inter.model <-
-  alply (Nodes $ intermediate, 1, mainModel,
+  alply (Nodes $ intermediate, 1, safe.mainModel,
          main.data = OneDef, tree = Tree [[1]], what = 'local',
          prior.list = list ('mean' = OneDef [['Cebus_apella']] $ mean,
            'vcv' = post.vcv $ ss.grand.mean),
@@ -49,7 +51,7 @@ Nodes $ inter.model <-
 save (Nodes, file = 'Nodes.RData')
 
 Nodes $ term.model <-
-  alply (Nodes $ terminal, 1, mainModel,
+  alply (Nodes $ terminal, 1, safe.mainModel,
          main.data = OneDef, tree = Tree [[1]], what = 'local',
          prior.list = list ('mean' = OneDef [['Cebus_apella']] $ mean,
            'vcv' = post.vcv $ ss.grand.mean),
