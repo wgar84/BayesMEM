@@ -15,6 +15,7 @@ PostDeltaZ <- function (extracted, tree, beta = FALSE)
                anc.states.tree [, t, ] - anc.states.tree [, o, ]
              })
     DeltaZ <- aperm (DeltaZ, c(2, 1, 3))
+    
     if (beta)
       {
         Beta <- aaply (1:(dim (DeltaZ) [1]), 1, function (i)

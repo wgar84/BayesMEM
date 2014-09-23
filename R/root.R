@@ -11,6 +11,7 @@ require (reshape2)
 require (ggplot2)
 require (rstan)
 require (phytools)
+require (geiger)
 
 attach ('../../Databases/Reference.RData')
 attach ('../../Databases/OneDef/ED.RData')
@@ -21,7 +22,14 @@ attach ('../../covTensor/Work/post.vcv.RData')
 
 source ('../FuncR/mainModel.R')
 
-Root <- mainModel(110, OneDef, Tree [[1]], 'local',
+## RAxML.tree <- read.tree ('raxml.nm.tre')
+## RAxML.tree <- treedata (RAxML.tree, OneDef, TRUE) $ phy
+## Tree [[5]] <- RAxML.tree
+## names (Tree) [5] <- 'raxml.nm'
+## save (Tree, file = '../../Databases/Tree.RData')
+## plot (RAxML.tree, direction = 'upwards')
+
+Root <- mainModel(110, OneDef, Tree [[5]], 'local',
                   list ('mean' = OneDef [['Cebus_apella']] $ mean,
                           'vcv' = post.vcv $ ss.grand.mean),
                     model = 'oneSigma_Anc',
