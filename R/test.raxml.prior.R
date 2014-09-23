@@ -35,7 +35,7 @@ nodelabels()
 Test <- mainModel(138, OneDef, Tree [[5]], 'local',
                   list ('mean' = OneDef [['Pithecia_pithecia']] $ mean,
                         'vcv' = post.vcv $ ss.grand.mean),
-                  model = 'oneSigma_Anc',
+                  model = 'oneSigma_Anc_prior',
                   pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                   warmup = 500, iter = 1000, thin = 5)
 

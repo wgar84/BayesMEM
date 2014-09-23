@@ -53,10 +53,10 @@ model {
     
   /** priors **/
   
-  //for (i in 1:(2 * (m-1)))
-  //  Xbar[i] ~ multi_normal(priorX, (10^3) * priorS);
+  for (i in 1:(2 * (m-1)))
+    Xbar[i] ~ multi_normal(priorX, (10^3) * priorS);
   
-  //alpha ~ multi_normal(priorX, (10^3) * priorS);
+  alpha ~ multi_normal(priorX, (10^3) * priorS);
   
   // lambda ~ uniform(0, 1);
   
