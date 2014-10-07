@@ -2,7 +2,7 @@ require (mvtnorm)
 require (phytools)
 
 mainModel <-
-  function (node, main.data, tree, what = 'local',
+  function (node, main.data, tree, what = 'local', initial.state = 'stan', 
             prior.list, model = 'oneSigma_noAnc', ...)
   {
     stan.data <- list()
@@ -56,9 +56,47 @@ mainModel <-
                 sigma_bm <- diag (prior.list $ vcv)
               })
     model.file <- paste ('../Stan/', model, '.stan', sep = '')
-    model.fit <- stan (file = model.file, chains = 1, 
-                       data = stan.data, init = start.values, ...)
-    return (model.fit)
+    if (initial.state == 'stan')
+      model.fit <- stan (file = model.file, chains = 1, 
+                         data = stan.data, ...)
+    else
+      model.fit <- stan (file = model.file, chains = 1, 
+                         data = stan.data, init = start.values, ...)
+    ext <- extract (model.fit)
+    ext <- llply (ext, function (L)
+                  {
+                    change.k <- length (which (dim (L) == stan.data $ k)) != 0
+                    if (change.k)
+                      for (i in which (dim (L) == stan.data $ k))
+                        {
+                          names (dimnames (L)) [i] <- 'trait'
+                          dimnames (L) [[i]] <- colnames (raw.data [[1]])
+                        }
+                    if (ifelse (grepl ('_Anc', model), TRUE, FALSE))
+                      {
+                        change.m <- length (which (dim (L) == 2*stan.data $ m - 2)) != 0
+                        if (change.m)
+                          for (i in which (dim (L) == 2*stan.data $ m - 2))
+                            {
+                              names (dimnames (L)) [i] <- 'node'
+                              dimnames (L) [[i]] <-
+                                c(subtree $ tip.label,
+                                  as.character (stan.data $ m + (2:(stan.data $ m - 1))))
+                            }
+                      }
+                    else
+                      {
+                        change.m <- length (which (dim (L) == stan.data $ m)) != 0
+                        if (change.m)
+                          for (i in which (dim (L) == stan.data $ m))
+                            {
+                              names (dimnames (L)) [i] <- 'node'
+                              dimnames (L) [[i]] <- subtree $ tip.label
+                            }
+                      }
+                    L
+                  })
+    return (list ('model' = model.fit, 'extract' = ext))
   }
 
 

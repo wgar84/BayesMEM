@@ -12,6 +12,7 @@ require (ggplot2)
 require (rstan)
 require (phytools)
 require (geiger)
+require (mvtnorm)
 
 attach ('../../Databases/Reference.RData')
 attach ('../../Databases/OneDef/ED.RData')
@@ -33,10 +34,33 @@ plot (extract.clade (Tree [[5]], 138), direction = 'upwards')
 nodelabels()
 
 Test <- mainModel(138, OneDef, Tree [[5]], 'local',
-                  list ('mean' = OneDef [['Pithecia_pithecia']] $ mean,
+                  list ('mean' = OneDef [['Cebus_apella']] $ mean,
                         'vcv' = post.vcv $ ss.grand.mean),
                   model = 'oneSigma_Anc',
                   pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                   warmup = 500, iter = 1000, thin = 5)
 
 save (Test, file = 'Test.RData')
+
+
+Test2 <- mainModel(138, OneDef, Tree [[5]], 'local',
+                  list ('mean' = OneDef [['Saguinus_mystax']] $ mean,
+                        'vcv' = post.vcv $ ss.grand.mean),
+                  model = 'oneSigma_Anc',
+                  pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+                  warmup = 500, iter = 1000, thin = 5)
+
+Test.new <- alply(1:8, 1, function (i)
+                  mainModel(138, OneDef, Tree [[5]], 'local',
+                            list ('mean' = OneDef [[i+26]] $ mean,
+                                  'vcv' = post.vcv $ ss.grand.mean),
+                            model = 'oneSigma_Anc', initial.state = 'R',
+                            pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+                            warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)
+
+mainModel(138, OneDef, Tree [[5]], 'local',
+          model = 'oneSigma_Anc', initial.state = 'stan',
+          list ('mean' = OneDef [['Saguinus_mystax']] $ mean,
+                'vcv' = post.vcv $ ss.grand.mean),
+          pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+          warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)

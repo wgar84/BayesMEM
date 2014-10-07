@@ -13,13 +13,30 @@ require (rstan)
 require (phytools)
 require (geiger)
 require (mvtnorm)
+require (boa)
 
 attach ('../../Databases/Reference.RData')
-attach ('../../Databases/OneDef/ED.RData')
+attach ('../../Databases/ED.RData')
 attach ('../../Databases/OneDef/OneDef.RData')
 attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
 attach ('../../covTensor/Work/post.vcv.RData')
+
+## for (i in 1:109)
+##   OneDef [[i]] <-
+##   llply (OneDef [[i]],
+##          function (L)
+##          {
+##            change <- length (which (dim (L) == 39)) != 0
+##            if (change)
+##              for (i in which (dim (L) == 39))
+##                dimnames (L) [[i]] <- c('logCS', rownames (Aux $ ed.hyp [[1]]) [-20])
+##            L
+##          })
+
+## save (OneDef, file = '../../Databases/OneDef/OneDef.RData')
+## rm (OneDef)
+## detach(file:../../Databases/OneDef/OneDef.RData)
 
 ### com priors
 
@@ -31,7 +48,7 @@ test.prior.post $ ext <- extract(Test.prior)
 test.prior.post $ quantile <-  foreach (i = 1:12) %dopar%
 DiagQuantile (OneDef [[i+26]] $ local,
               test.prior.post $ ext $ Xbar [, i, ],
-              test.prior.post $ ext $ Sigma, at = seq(0, 1, 0.25))
+              test.prior.post $ ext $ Sigma, at = c(0, 0.5, 1))
 
 pdf (file = 'diags_test_prior.pdf', width = 15, height = 12)
 for (i in 1:12)
@@ -70,7 +87,7 @@ boxplot (aaply (test.prior.post $ response $ DeltaZ, c(1, 2), Norm),
 
 boxplot (aaply (test.prior.post $ ext $ Xbar [, 13:21, ], c(2, 3), mean))
 
-points (1:39, OneDef [['Pithecia_pithecia']] $ mean, col = 'red')
+points (1:39, OneDef [['Cebus_apella']] $ mean, col = 'red')
 
 test.prior.post $ beta.df <- melt (test.prior.post $ response $ Beta)
 
@@ -93,79 +110,10 @@ edgelabels (pch = 20,
 
 edgelabels (pch = c('', '*') [aaply (
               apply (test.prior.post $ response $ Beta [, , 'logCS'],
-                     2, range), 2, function (x) prod (x) > 0) + 1])
+                     2, ), 2, function (x) prod (x) > 0) + 1])
 
 ### sem priors
 
-attach ('Test.RData')
-
-test.post <- list()
-test.post $ ext <- extract(Test)
-
-test.post $ quantile <-  foreach (i = 1:12) %dopar%
-DiagQuantile (OneDef [[i+26]] $ local,
-              test.post $ ext $ Xbar [, i, ],
-              test.post $ ext $ Sigma, at = seq(0, 1, 0.25))
-
-pdf (file = 'diags_test.pdf', width = 15, height = 12)
-for (i in 1:12)
-  plot (test.post $ quantile [[i]] +
-        labs (title = names (OneDef) [i+26]) + theme_minimal() +
-        theme (axis.text = element_text (size=6)))
-dev.off (dev.cur ())
-
-test.post $ subtree <- extract.clade(Tree [[5]], 138)
-
-test.post $ response <- PostDeltaZ(test.post $ ext,
-                                         test.post $ subtree, TRUE)
-
-names (dimnames (test.post $ response $ Beta)) <- c('iter', 'edge', 'trait')
-
-dimnames (test.post $ response $ Beta) [[3]] <- colnames (OneDef [[1]] $ local)
-dimnames (test.post $ response $ Beta) [[2]] <-
-  paste (c(test.post $ subtree $ tip.label,
-           as.character (13:23)) [test.post $ subtree $ edge [, 1]],
-         c(test.post $ subtree $ tip.label,
-           as.character (13:23))  [test.post $ subtree $ edge [, 2]],
-         sep = '-')
-
-names (dimnames (test.post $ response $ DeltaZ)) <-
-  names (dimnames (test.post $ response $ Beta))
-
-dimnames (test.post $ response $ DeltaZ) <-
-  dimnames (test.post $ response $ Beta)
-
-par (mar = c(10, 5, 5, 5))
-boxplot (test.post $ response $ Beta [, , 'logCS'], las = 3, cex.axis = 0.7,
-         main = 'Beta_i (logCS)', cex = 0.5, cex.axis = 0.5)
-
-boxplot (aaply (test.post $ response $ DeltaZ, c(1, 2), Norm),
-         las = 3, cex.axis = 0.3)
-
-boxplot (aaply (test.post $ ext $ Xbar [, 13:21, ], c(2, 3), mean))
-
-points (1:39, OneDef [['Pithecia_pithecia']] $ mean, col = 'red')
-
-test.post $ beta.df <- melt (test.post $ response $ Beta)
-
-pdf ('test.betas.pdf', width = 12, height = 12)
-ggplot(test.post $ beta.df, aes (x = trait, y = value)) +
-  geom_boxplot (outlier.shape = NA) + facet_wrap(~ edge, scales = 'free_y') +
-  theme(axis.text.x = element_text(angle = 90, size = 6, hjust = 1))
-dev.off (dev.cur ())
-
-test.post $ mean.beta.logcs <- colMeans (test.post $ response $ Beta [, , 'logCS'])
-
-pdf ('test.beta.logcs.pdf', width = 15, height = 15)
-plot (test.post $ subtree, cex = 0.5, use.edge.length = FALSE)
-edgelabels (pch = 20,
-            cex = 10 * abs (test.post $ mean.beta.logcs) /
-            max(test.post $ mean.beta.logcs),
-            col = ifelse (test.post $ mean.beta.logcs > 0,
-              rgb (1, 0, 0, 0.2), rgb (0, 0, 1, 0.2)))
-
-edgelabels (pch = c('', '*') [aaply (apply (test.post $ response $ Beta [, , 'logCS'],
-              2, range), 2, function (x) prod (x) > 0) + 1])
 
 ### diagnostico de convergencia
 
@@ -179,7 +127,7 @@ test.prior.post $ alpha.df [, 'iteration'] <-
   as.numeric (test.prior.post $ alpha.df [, 'iteration'])
 
 test.prior.post $ alpha.prior.df <-
-  melt (OneDef [['Pithecia_pithecia']] $ mean)
+  melt (OneDef [['Cebus_apella']] $ mean)
 
 test.prior.post $ alpha.prior.df $ trait <- rownames (test.prior.post $ alpha.prior.df)
 
@@ -256,3 +204,18 @@ ggplot (subset (test.post $ xbar.df,
   geom_point() + geom_line() +
   geom_hline(data = test.post $ alpha.start.df, aes (yintercept = value)) + 
   facet_wrap(~ trait)
+
+boa.hpd ()
+
+by(test.post $ beta.df $ value [test.post $ beta.df $ trait == 'logCS'],
+   list (test.post $ beta.df $ edge [test.post $ beta.df $ trait == 'logCS']),
+   boa.hpd, alpha = 0.05)
+
+by(test.prior.post $ beta.df $ value [test.prior.post $ beta.df $ trait == 'logCS'],
+   list (test.prior.post $ beta.df $ edge [test.prior.post $ beta.df $ trait == 'logCS']),
+   boa.hpd, alpha = 0.05)
+
+
+by(test.post $ beta.df $ value,
+   list (test.post $ beta.df $ edge, test.post $ beta.df $ trait),
+   function (x) sort (x) [c(2, 98)])
