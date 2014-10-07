@@ -38,7 +38,8 @@ DiagQuantilePop <- function (node, extract.stanfit,
                  size = 1, alpha = 0.1) +
                    facet_wrap(~ trait, scales = 'free_y') +
                      scale_x_discrete(labels = abbreviate) +
-                       theme(axis.text.x = element_text(angle = 90))
+                       theme_minimal() +
+                         theme(axis.text.x = element_text(angle = 90))
     Plot
   }
 

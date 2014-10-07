@@ -8,7 +8,8 @@ DiagTrace <- function (extraction, reference.value = NULL)
     Plots $ alpha <-
       ggplot (alpha.df, aes (x = iterations, y = value)) +
         geom_line() +
-          facet_wrap(~ trait, scales = 'free_y')
+          theme_minimal() +
+            facet_wrap(~ trait, scales = 'free_y')
 
     xbar.df <- melt (extraction $ Xbar)
     xbar.df [, 'ancestor'] <- !is.na (as.numeric (as.character (xbar.df [, 'node'])))
@@ -17,13 +18,15 @@ DiagTrace <- function (extraction, reference.value = NULL)
       ggplot (subset (xbar.df, !ancestor), 
               aes (x = iterations, y = value, color = node)) +
                 geom_line() +
-                  facet_wrap(~ trait, scales = 'free_y')
+                  theme_minimal() +
+                    facet_wrap(~ trait, scales = 'free_y')
 
     Plots $ ancestor <-
       ggplot (subset (xbar.df, ancestor), 
               aes (x = iterations, y = value, color = node)) +
                 geom_line() +
-                  facet_wrap(~ trait, scales = 'free_y')
+                  theme_minimal() +
+                    facet_wrap(~ trait, scales = 'free_y')
 
     if (!is.null(reference.value))
       {

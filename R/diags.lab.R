@@ -4,8 +4,8 @@ require (expm)
 require (plyr)
 require (plotrix)
 require (doMC)
-registerDoMC (cores = 3)
-#registerDoMC (cores = 8)
+#registerDoMC (cores = 3)
+registerDoMC (cores = 8)
 #registerDoMC (cores = 60)
 require (reshape2)
 require (ggplot2)
@@ -95,3 +95,35 @@ test.trace.diags2 $ alpha
 test.trace.diags2 $ extant
 test.trace.diags2 $ ancestor
 
+### oito (ou sete posterioris)
+
+new.test <- list()
+new.test $ ext <- llply (Test.new, function (L) L $ ext)
+
+new.test $ ext <- new.test $ ext [-7]
+
+new.test $ diag.quant <- llply (new.test $ ext, function (L)
+                                DiagQuantilePop(138, L, OneDef, Tree [[5]],
+                                                at = c(0, 0.25, 0.75, 1)),
+                                .parallel = TRUE)
+
+new.test $ diag.trace <- alply (1:7, 1, function (i)
+                                DiagTrace(new.test $ ext [[i]],
+                                          OneDef [[c(26:31, 33) [i]]] $ mean),
+                                .parallel = TRUE)
+
+
+pdf (file = 'multi.diag.trace.pdf', width = 48, height = 16)
+for (i in 1:7)
+  {
+    test.plot <- do.call (arrangeGrob, c (new.test $ diag.trace [[i]], ncol = 3))
+    print(test.plot)
+  }
+dev.off (dev.cur ())
+
+pdf (file = 'multi.diag.quant.pdf', width = 16, height = 16)
+for (i in 1:7)
+  {
+    print(new.test $ diag.quant [[i]])
+  }
+dev.off (dev.cur ())
