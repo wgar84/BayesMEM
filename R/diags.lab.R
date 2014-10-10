@@ -86,3 +86,5 @@ ggsave(filename = 'gelmanDiag.jpg',
        width = 21, height = 7)
 
 new.test $ convergence $ lp.hist
+
+save (new.test, file = 'new.test.RData')
