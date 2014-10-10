@@ -58,9 +58,5 @@ Test.new <- alply(1:8, 1, function (i)
                             pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                             warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)
 
-mainModel(138, OneDef, Tree [[5]], 'local',
-          model = 'oneSigma_Anc', initial.state = 'stan',
-          list ('mean' = OneDef [['Saguinus_mystax']] $ mean,
-                'vcv' = post.vcv $ ss.grand.mean),
-          pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-          warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)
+### uma falhou
+save (Test.new, file = 'sevenTest.RData')
