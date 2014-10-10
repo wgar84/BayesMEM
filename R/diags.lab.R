@@ -10,6 +10,7 @@ registerDoMC (cores = 8)
 require (reshape2)
 require (ggplot2)
 require (grid)
+require (gridBase)
 require (gridExtra)
 require (rstan)
 require (phytools)
@@ -22,6 +23,12 @@ attach ('../../Databases/ED.RData')
 attach ('../../Databases/OneDef/OneDef.RData')
 attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
+
+.source.files <- dir('../FuncR/', pattern = '.R', full.names = TRUE)
+.source.files <- .source.files [!grepl ('~', .source.files)]
+
+for (i in 1:length (.source.files))
+  source (.source.files [i])
 
 #attach ('Test.RData')
 
@@ -95,6 +102,17 @@ test.trace.diags2 $ alpha
 test.trace.diags2 $ extant
 test.trace.diags2 $ ancestor
 
+str (summary(Test))
+
+dimnames (test.post $ response $ Beta)
+
+test.post $ response <- PostDeltaZ(test.post $ ext, test.post $ subtree, beta = TRUE)
+test.post $ response2 <- PostDeltaZ(test.post $ ext2, test.post $ subtree, beta = TRUE)
+
+DiagBeta(test.post $ response $ Beta, test.post $ subtree)
+
+
+
 ### oito (ou sete posterioris)
 
 new.test <- list()
@@ -127,3 +145,10 @@ for (i in 1:7)
     print(new.test $ diag.quant [[i]])
   }
 dev.off (dev.cur ())
+
+new.test $ subtree <- extract.clade(Tree [[5]], 138)
+
+new.test $ post.response <-
+  llply (new.test $ ext, PostDeltaZ, tree = new.test $ subtree, beta = TRUE)
+
+
