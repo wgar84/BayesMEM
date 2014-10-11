@@ -61,7 +61,7 @@ model {
 
   /** brownian **/
 
-  ldet_BM <- 2 * (sum (log (diagonal (Gamma_bm))) + 
+  ldet_BM <- 2 * (log_determinant(Gamma_bm) + 
 		  sum(sigma_bm));
   // jacobian of transform to correlation matrix
 

@@ -66,7 +66,7 @@ DiagGelman <- function (extract.list, parallel = TRUE)
     theta.var <- theta.varW
     theta.var <- theta.var [-which (colnames (theta.var) == 'variable')]
     colnames (theta.var) [which (colnames (theta.var) == 'value')] <- 'var.w'
-    
+
     Plots <- list ()
     Plots <-
       within (Plots,
@@ -89,7 +89,7 @@ DiagGelman <- function (extract.list, parallel = TRUE)
                 ### var.w/var.t
                 ratio.jitter <-
                   ggplot (theta.var) +
-                    geom_point(aes (x = L1, y = var.w/var.t, colour = anc),
+                    geom_point(aes (x = L1, y = var.w/var.t, colour = L1),
                                alpha = 0.4,
                                position = position_jitter (width = 0.25)) 
                 ratio.jitter <-
