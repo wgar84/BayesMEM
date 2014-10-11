@@ -41,6 +41,6 @@ Test.Anc <- alply(1:8, 1, function (i)
                                      'vcv' = post.vcv $ ss.grand.mean),
                                control = list ('chain_id' = i),
                                pars = c('ancestor', 'root'),
-                               warmup = 5000, iter = 10000, thin = 50), .parallel = TRUE)
+                               warmup = 1000, iter = 2000, thin = 10), .parallel = TRUE)
 
 save (Test.Anc, file = 'ancTest.RData')
