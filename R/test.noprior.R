@@ -43,7 +43,7 @@ Test.NoPrior <- alply(1:8, 1, function (i)
                                       'vcv' = post.vcv $ ss.grand.mean),
                                 model = 'oneSigma_Anc', initial.state = 'R',
                                 pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                                warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)
+                                warmup =1000, iter = 2000, thin = 10), .parallel = TRUE)
 
 ### uma falhou
 save (Test.NoPrior, file = 'TestNO.RData')

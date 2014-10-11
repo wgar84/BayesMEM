@@ -43,6 +43,6 @@ Test.Prior <- alply(1:8, 1, function (i)
                                       'vcv' = post.vcv $ ss.grand.mean),
                                 model = 'oneSigma_Anc_prior', initial.state = 'R',
                                 pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                                warmup = 500, iter = 1000, thin = 5), .parallel = TRUE)
+                                warmup = 1000, iter = 2000, thin = 5), .parallel = TRUE)
 
 save (Test.Prior, file = 'TestPR.RData')
