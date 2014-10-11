@@ -61,8 +61,8 @@ model {
       sigma_bm[i] ~ chi_square(max(ni));
     }
   
-  Gamma ~ ldk_corr_chol(2);
-  Gamma_bm ~ ldk_corr_chol(2);
+  Gamma ~ ldk_corr_cholesky(2);
+  Gamma_bm ~ ldk_corr_cholesky(2);
   
   /** brownian **/
 
