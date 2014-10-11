@@ -39,11 +39,12 @@ failMainModel <- failwith(NULL, mainModel)
 
 Test.NoPrior <- alply(1:8, 1, function (i)
                       failMainModel(138, OneDef, Tree [[5]], 'local',
-                                list ('mean' = OneDef [[i+26]] $ mean,
-                                      'vcv' = post.vcv $ ss.grand.mean),
-                                model = 'oneSigma_Anc', initial.state = 'R',
-                                pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
-                                warmup =1000, iter = 2000, thin = 10), .parallel = TRUE)
+                                    list ('mean' = OneDef [[i+26]] $ mean,
+                                          'vcv' = (10 ^ 3) * post.vcv $ ss.grand.mean),
+                                    model = 'oneSigma_Anc', initial.state = 'R',
+                                    pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
+                                    control = list ('chain_id' = i),
+                                    warmup = 1000, iter = 2000, thin = 10), .parallel = TRUE)
 
 ### uma falhou
 save (Test.NoPrior, file = 'TestNO.RData')
