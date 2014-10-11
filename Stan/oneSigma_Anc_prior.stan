@@ -96,7 +96,7 @@ generated quantities {
   cov_matrix[k] Sigma_bm;
   
   Sigma <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma), 
-			  sigma;
+			  sigma);
   Sigma_bm <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma_bm), 
 			     sigma_bm);
 }
