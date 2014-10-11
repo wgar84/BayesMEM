@@ -5,14 +5,14 @@ data {
   int ni[m]; // amostras
   int ni_max; // máximo amostra
   vector[k] X[m,ni_max]; // dados
-  vector[k] priorX;
-  cov_matrix[k] priorS;
+  //vector[k] priorX;
+  //cov_matrix[k] priorS;
 }
 
 transformed data {
   vector[k] zero_vector;
   real ldetC;
-  matrix[2 * (m-1),2 * (m-1)] invC;
+  cov_matrix[2 * (m-1)] invC;
   
   for (i in 1:k)
     zero_vector[i] <- 0;
@@ -28,10 +28,10 @@ parameters {
   vector[k] alpha;
   
   cholesky_factor_corr[k] Gamma; // Sigma = sGG's
-  real<lower=0> sigma[k];
+  vector<lower=0>[k] sigma;
 
   cholesky_factor_corr[k] Gamma_bm; 
-  real<lower=0> sigma_bm[k];
+  vector<lower=0>[k] sigma_bm;
 
 }
 
@@ -49,27 +49,25 @@ model {
   /**
 
   for (i in 1:(2 * (m-1)))
-    Xbar[i] ~ multi_normal(priorX, (10^3) * priorS);
+    Xbar[i] ~ multi_normal(priorX, priorS);
   
-  alpha ~ multi_normal(priorX, (10^3) * priorS);
+  alpha ~ multi_normal(priorX, priorS);
   
-  lambda ~ uniform(0, 1);
+  //lambda ~ uniform(0, 1);
   
   for (i in 1:k)
     {
-      sigma[i] ~ chi_square(min(ni) - 1);
-      sigma_bm[i] ~ chi_square(min(ni) - 1);
+      sigma[i] ~ chi_square(max(ni));
+      sigma_bm[i] ~ chi_square(max(ni));
     }
   
-  Gamma ~ ldk_corr_chol(1);
-  Gamma_bm ~ ldk_corr_chol(1);
+  Gamma ~ ldk_corr_chol(2);
+  Gamma_bm ~ ldk_corr_chol(2);
   
-  **/
-
   /** brownian **/
 
   for(i in 1:(2 * (m-1)))
-    eXbar[i] <- to_row_vector ((Xbar[i] - alpha) ./ to_vector(sigma_bm));
+    eXbar[i] <- to_row_vector ((Xbar[i] - alpha) ./ sigma_bm);
   
   ldet_BM <- 2 * (sum (log (diagonal (Gamma_bm))) + 
 		  sum(sigma_bm));
@@ -85,9 +83,9 @@ model {
   /** pops **/
 
   for(i in 1:m)
-    for(j in 1:ni[i])
+    for(j in 1:(ni[i]))
       {
-	eX[i,j] <- (X[i,j] - Xbar[i]) ./ to_vector(sigma);
+	eX[i,j] <- (X[i,j] - Xbar[i]) ./ sigma;
 	eX[i,j] ~ multi_normal_cholesky(zero_vector, Gamma);
       }
 
@@ -100,7 +98,7 @@ generated quantities {
   cov_matrix[k] Sigma_bm;
   
   Sigma <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma), 
-			  to_vector(sigma));
+			  sigma;
   Sigma_bm <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma_bm), 
-			     to_vector(sigma_bm));
+			     sigma_bm);
 }

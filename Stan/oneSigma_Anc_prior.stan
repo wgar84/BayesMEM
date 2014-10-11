@@ -19,7 +19,8 @@ transformed data {
 
   ldetC <- log_determinant(C);
   invC <- inverse_spd(C);
- 
+  
+  
 }
 
 parameters {
@@ -27,30 +28,22 @@ parameters {
   vector[k] alpha;
   
   cholesky_factor_corr[k] Gamma; // Sigma = sGG's
-  real<lower=0> sigma[k];
+  vector<lower=0>[k] sigma;
 
   cholesky_factor_corr[k] Gamma_bm; 
-  real<lower=0> sigma_bm[k];
+  vector<lower=0>[k] sigma_bm;
 
-}
-
-transformed parameters {
-  vector[k] eX[m,ni_max];
-  matrix[2 * (m-1),k] eXbar;
-  
-  for(i in 1:(2 * (m-1)))
-    eXbar[i] <- to_row_vector ((Xbar[i] - alpha) ./ to_vector(sigma_bm));
-      
-  for(i in 1:m)
-    for(j in 1:ni[i])
-      eX[i,j] <- (X[i,j] - Xbar[i]) ./ to_vector(sigma);
 }
 
 model {
 
   real ldet_BM;
   real llik_BM; 
-    
+  
+  matrix[k,k] invGamma_bm;
+  vector[k] eX[m,ni_max];
+  matrix[2 * (m-1),k] eXbar;
+
   /** priors **/
   
   for (i in 1:(2 * (m-1)))
@@ -58,36 +51,41 @@ model {
   
   alpha ~ multi_normal(priorX, priorS);
   
-  // lambda ~ uniform(0, 1);
+  //lambda ~ uniform(0, 1);
   
   for (i in 1:k)
     {
-      sigma[i] ~ chi_square(min(ni) - 1);
-      sigma_bm[i] ~ chi_square(min(ni) - 1);
+      sigma[i] ~ chi_square(max(ni));
+      sigma_bm[i] ~ chi_square(max(ni));
     }
-
-  // Gamma ~ ldk_corr_chol(1);
-  // Gamma_bm ~ ldk_corr_chol(1);
-
+  
+  Gamma ~ ldk_corr_chol(2);
+  Gamma_bm ~ ldk_corr_chol(2);
+  
   /** brownian **/
 
-  ldet_BM <- log_determinant(Gamma_bm); 
-  // detS = det(GG) = det(G)det(G) = det(G)^2 (e tira log) 
-  ldet_BM <- ldet_BM + sum(sigma_bm);
+  for(i in 1:(2 * (m-1)))
+    eXbar[i] <- to_row_vector ((Xbar[i] - alpha) ./ sigma_bm);
+  
+  ldet_BM <- 2 * (sum (log (diagonal (Gamma_bm))) + 
+		  sum(sigma_bm));
   // jacobian of transform to correlation matrix
 
-  llik_BM  <- - 0.5 * (trace_gen_quad_form(inverse_spd(Gamma_bm * Gamma_bm'), 
-					   invC, 
-					   eXbar) +
-		       k * ldetC) - m * ldet_BM;
+  invGamma_bm <- inverse_spd(multiply_lower_tri_self_transpose(Gamma_bm));
+
+  llik_BM  <- - 0.5 * (trace_gen_quad_form(invC, invGamma_bm, eXbar') +
+		       k * ldetC + (2 * (m - 1) * ldet_BM)); // puta que pariu 2
 
   increment_log_prob(llik_BM);
   
   /** pops **/
 
-  for (i in 1:m)
-    for (j in 1:(ni[i]))
-      eX[i,j] ~ multi_normal_cholesky(zero_vector, Gamma);
+  for(i in 1:m)
+    for(j in 1:(ni[i]))
+      {
+	eX[i,j] <- (X[i,j] - Xbar[i]) ./ sigma;
+	eX[i,j] ~ multi_normal_cholesky(zero_vector, Gamma);
+      }
 
   increment_log_prob(- m * sum (ni) * sum(sigma)); 
   // jacobian of transform to correlation matrix
@@ -97,6 +95,8 @@ generated quantities {
   cov_matrix[k] Sigma;
   cov_matrix[k] Sigma_bm;
   
-  Sigma <- quad_form(Gamma * Gamma', diag_matrix(to_vector(sigma)));
-  Sigma_bm <- quad_form(Gamma_bm * Gamma_bm', diag_matrix(to_vector(sigma_bm)));
+  Sigma <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma), 
+			  sigma;
+  Sigma_bm <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma_bm), 
+			     sigma_bm);
 }
