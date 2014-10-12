@@ -18,7 +18,7 @@ PostDeltaZ <- function (extracted, tree, beta = FALSE)
              })
     DeltaZ <- aperm (DeltaZ, c(2, 1, 3))
     names (dimnames (DeltaZ)) <- c('iterations', 'edge', 'trait')
-    dimnames (DeltaZ) [c(1, 3)] <- list (as.character (1:100),
+    dimnames (DeltaZ) [c(1, 3)] <- list (as.character (1:dim (DeltaZ) [1]),
                                          dimnames (extracted $ Xbar) [[3]])
     dimnames (DeltaZ) [[2]] <- paste (names.taxa [tree $ edge [, 1]],
                                       names.taxa [tree $ edge [, 2]], sep = '-')

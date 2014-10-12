@@ -39,3 +39,39 @@ DiagTrace <- function (extraction, reference.value = NULL)
       }                             
     Plots
   }
+
+
+DiagTraceAlt <- function (extraction, reference.value = NULL)
+  {
+    alpha.df <- melt (extraction $ root)
+    alpha.df [, 'iterations'] <-
+      as.numeric (alpha.df [, 'iterations'])
+
+    Plots <- list()
+    Plots $ alpha <-
+      ggplot (alpha.df, aes (x = iterations, y = value)) +
+        geom_line() +
+          theme_minimal() +
+            facet_wrap(~ trait, scales = 'free_y')
+    
+    xbar.df <- melt (extraction $ ancestor)
+    #xbar.df [, 'ancestor'] <- !is.na (as.numeric (as.character (xbar.df [, 'node'])))
+
+    Plots $ ancestor <-
+      ggplot (xbar.df,
+              aes (x = iterations, y = value, color = factor (node))) +
+                geom_line() +
+                  theme_minimal() +
+                    facet_wrap(~ trait, scales = 'free_y')
+
+    if (!is.null(reference.value))
+      {
+        ref.df <- melt (reference.value)
+        ref.df $ trait <- names (reference.value)
+
+        Plots <-
+          llply (Plots, function (Gr)
+                 Gr + geom_hline (aes (yintercept = value), ref.df))
+      }                             
+    Plots
+  }

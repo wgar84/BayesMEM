@@ -37,43 +37,39 @@ anc.post <- list()
 anc.post $ ext <- llply (Test.Anc, function (L) L $ ext)
 #anc.post $ ext <- anc.post $ ext [-7]
 
+anc.post $ ext <- llply(anc.post $ ext, function (L)
+                        { names (dimnames (L $ ancestor)) [2] <- 'node'
+                          dimnames (L $ ancestor) [[2]] <- as.character(14:23)
+                          L })
+
 anc.post $ subtree <- extract.clade(Tree [[5]], 138)
 
-### QUANTIS
-anc.post $ diag.quant <- llply (anc.post $ ext, function (L)
-                                DiagQuantilePop(138, L, OneDef, Tree [[5]],
-                                                at = c(0, 0.25, 0.75, 1)),
-                                .parallel = TRUE)
-
-pdf (file = 'multi.diag.quant.pdf', width = 24, height = 12)
-for (i in 1:7)
-  print(anc.post $ diag.quant [[i]])
-dev.off (dev.cur ())
-
 ### TRACE
-anc.post $ diag.trace <- alply (1:7, 1, function (i)
-                                DiagTrace(anc.post $ ext [[i]],
-                                          OneDef [[c(26:31, 33) [i]]] $ mean),
+anc.post $ diag.trace <- alply (1:8, 1, function (i)
+                                DiagTraceAlt(anc.post $ ext [[i]],
+                                             OneDef [[c(26:33) [i]]] $ mean),
                                 .parallel = TRUE)
 
-pdf (file = 'multi.diag.trace.pdf', width = 36, height = 12)
-for (i in 1:7)
+pdf (file = 'multi.diag.trace.anc.pdf', width = 24, height = 12)
+for (i in 1:8)
   {
-    test.plot <- do.call (arrangeGrob, c (anc.post $ diag.trace [[i]], ncol = 3))
+    test.plot <- do.call (arrangeGrob, c (anc.post $ diag.trace [[i]], ncol = 2))
     print(test.plot)
   }
 dev.off (dev.cur ())
 
-### BETAS
-anc.post $ post.response <-
-  llply (anc.post $ ext, PostDeltaZ, tree = anc.post $ subtree, beta = TRUE)
+anc.post $ one.model <- sflist2stanfit(llply (Test.Anc, function (L) L $ model))
+anc.post $ one.model.ext <- extract(anc.post $ one.model)
 
-pdf (file = 'multi.diag.beta.pdf', width = 24, height = 12)
-for (i in 1:7)
-  {
-    print (DiagBeta(anc.post $ post.response [[i]], anc.post $ subtree))
-  }
-dev.off (dev.cur ())
+for (i in 1:3)
+names (dimnames (anc.post $ one.model.ext [[i]])) <-
+  names (dimnames (anc.post $ ext [[1]] [[i]]))
+
+anc.post $ trace.one.model <- DiagTraceAlt(anc.post $ one.model.ext)
+
+anc.post $ trace.one.model [[1]]
+anc.post $ trace.one.model [[2]]
+
 
 ### GELMAN
 anc.post $ convergence <- DiagGelman(anc.post $ ext)
@@ -81,7 +77,7 @@ anc.post $ convergence <- DiagGelman(anc.post $ ext)
 anc.post $ convergence.composite <-
   do.call (arrangeGrob, c(anc.post $ convergence, 'ncol' = 3))
 
-ggsave(filename = 'gelmanDiag.jpg',
+ggsave(filename = 'gelmanDiag.anc.jpg',
        plot = anc.post $ convergence.composite,
        width = 21, height = 7)
 
