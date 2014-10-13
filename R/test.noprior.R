@@ -45,7 +45,8 @@ Test.NoPrior <- alply(1:12, 1, function (i)
                                     model = 'oneSigma_Anc', initial.state = 'R',
                                     pars = c('Xbar', 'alpha', 'Sigma', 'Sigma_bm'),
                                     control = list ('chain_id' = i),
-                                    warmup = 0, iter = 5000, thin = 50), .parallel = TRUE)
+                                    warmup = 1500, iter = 6500, thin = 50),
+                      .parallel = TRUE)
 
 ### uma falhou
 save (Test.NoPrior, file = 'TestNO.RData')
