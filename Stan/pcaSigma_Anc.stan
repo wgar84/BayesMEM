@@ -22,6 +22,7 @@ transformed data {
     {dim_flag <- k;}
 }
 
+
 parameters {
   vector[k] terminal[m];
   vector[k] ancestor[m-2];
@@ -32,24 +33,24 @@ parameters {
 
   cholesky_factor_corr[dim_flag] GammaB; 
   vector<lower=0>[dim_flag] sigmaB;
-
 }
 
+
 transformed parameters {
-  cov_matrix[k] Sigma;
+
+  cov_matrix[k] SigmaW;
   
   matrix[k,k] eigen_vec;
   matrix[k,dim_flag] eigen_vec_trimmed;
   
-  Sigma <- quad_form_diag(multiply_lower_tri_self_transpose(GammaW), sigmaW);
+  SigmaW <- quad_form_diag(multiply_lower_tri_self_transpose(GammaW), sigmaW);
 
-  eigen_vec <- eigenvectors_sym(Sigma);
+  eigen_vec <- eigenvectors_sym(SigmaW);
   eigen_vec_trimmed <- block(eigen_vec, 1, 1, k, dim_flag);
-
 }
 
+
 model {
-  
   real ldetB;
   real llikB; 
   
@@ -58,7 +59,7 @@ model {
   matrix[2 * (m-1),k] exbar;
 
   matrix[2 * (m-1),dim_flag] exbar_W;
-  
+    
   /** priors **/
   
   /** pops **/
@@ -78,10 +79,9 @@ model {
   for(i in 1:m)
     exbar[i] <- to_row_vector(terminal[i] - root);
     
-  
   for(i in 1:(m-2))
     exbar[i+m] <- to_row_vector(ancestor[i] - root);
-    
+
   exbar_W <- exbar * eigen_vec_trimmed;
   
   for(i in 1:(2*(m-1)))

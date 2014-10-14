@@ -42,10 +42,11 @@ pcaTest <-
                             'vcv' = 10*OneDef[['Callithrix_kuhlii']] $ml.vcv),
                       model = 'pcaSigma_Anc',
                       pars = c('terminal', 'root', 'ancestor',
-                        'Sigma', 'SigmaB_W', 'SigmaB'),
+                        'SigmaW', 'SigmaB_W', 'SigmaB'),
                       control = list ('chain_id' = i),
-                      warmup = 1000, iter = 2000, thin = 10),
+                      warmup = 500, iter = 1000, thin = 5),
         .parallel = TRUE)
 
 
 save (pcaTest, file = 'pcaTest.RData')
+

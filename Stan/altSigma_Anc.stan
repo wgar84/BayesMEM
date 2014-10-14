@@ -9,22 +9,13 @@ data {
   //cov_matrix[k] priorS;
 }
 
-transformed data {
-  real ldetC;
-  cov_matrix[2 * (m-1)] invC;
-  
-  ldetC <- log_determinant(C);
-  invC <- inverse_spd(C);
- 
-}
-
 parameters {
   vector[k] terminal[m];
   vector[k] ancestor[m-2];
   vector[k] root;
   
-  cholesky_factor_corr[k] Gamma;
-  vector<lower=0>[k] sigma;
+  cholesky_factor_corr[k] GammaW;
+  vector<lower=0>[k] sigmaW;
 
   real<lower=0> drift;
 
@@ -38,7 +29,7 @@ transformed parameters {
   cov_matrix[k] Sigma_beta;
   cov_matrix[k] SigmaB;
 
-  SigmaW <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma), sigma);
+  SigmaW <- quad_form_diag(multiply_lower_tri_self_transpose(GammaW), sigmaW);
   
   Sigma_beta <- quad_form_diag(multiply_lower_tri_self_transpose(Gamma_beta), sigma_beta);
   SigmaB <- drift * SigmaW + quad_form_sym(Sigma_beta, SigmaW); 
@@ -68,8 +59,8 @@ model {
   ldetB <- log_determinant(SigmaB);
   invSigmaB <- inverse_spd(SigmaB);
   
-  llikB  <- - 0.5 * (trace_gen_quad_form(invSigmaB, invC, eXbar) +
-		     k * ldetC + (2 * (m - 1) * ldetB));
+  llikB  <- - 0.5 * (trace_gen_quad_form(invSigmaB, C, eXbar) +
+		     2 * (m - 1) * ldetB);
 
   increment_log_prob(llikB);
   

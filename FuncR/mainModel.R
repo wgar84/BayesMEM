@@ -53,6 +53,12 @@ mainModel <-
                   ancestor <-
                     rmvnorm (stan.data$m - 2, prior.list $ mean,
                              prior.list $ vcv)
+                if (grepl ('alt', model))
+                  {
+                    drift <- 1
+                    Gamma_beta <- t (chol (cov2cor (prior.list $ vcv)))
+                    sigma_beta <- diag (prior.list $ vcv)
+                  }
                 if (grepl ('pcaS', model))
                   {
                     dim.flag <- ifelse (stan.data $ k >= stan.data $ m,
@@ -63,7 +69,7 @@ mainModel <-
                 else
                   {
                     GammaB <- t (chol (cov2cor (prior.list $ vcv)))
-                    sigmaB <- diag (prior.lis $ vcv)
+                    sigmaB <- diag (prior.list $ vcv)
                   }
               })
     model.file <- paste ('../Stan/', model, '.stan', sep = '')
