@@ -4,8 +4,8 @@ require (expm)
 require (plyr)
 require (plotrix)
 require (doMC)
-registerDoMC (cores = 3)
-#registerDoMC (cores = 8)
+#registerDoMC (cores = 3)
+registerDoMC (cores = 8)
 #registerDoMC (cores = 60)
 require (reshape2)
 require (ggplot2)
@@ -106,3 +106,72 @@ ggsave(filename = 'no.gelmanDiag.jpg',
 
 save (no.test, file = 'noDiag.RData')
 
+load ('noDiag.RData')
+
+print (DiagW(no.test $ ext [[1]], llply (OneDef [27:38], function (L) L $ ml.vcv),
+             Aux $ sample.size [27:38], TRUE))
+
+
+#### W vs P
+no.test $ RS <- 
+  llply (no.test $ ext, DiagW, vcv.terminal.list =
+         llply (OneDef [27:38], function (L) L $ ml.vcv),
+         sample.size = Aux $ sample.size [27:38], 
+         parallel = FALSE,
+         .parallel = TRUE) ### paralelo entre cadeias, não dentro
+
+no.test $ RS.panel <- do.call (arrangeGrob, c(no.test $ RS, 'nrow' = 2, 'ncol' = 4))
+
+ggsave('WvsP.panel.jpg', no.test $ RS.panel, width = 32, height = 16)
+
+### B (under construction)
+
+no.test $ B.ml <- var (laply (OneDef [27:38], function (L) L $ mean))
+
+no.test $ B.term <- llply (no.test $ ext,
+                           function (L) aaply (L $ Xbar [, 1:12, ], 1, var))
+
+no.test $ RS.B.term <-
+  laply (no.test $ B.term, DiagB, no.test $ B.ml, parallel = FALSE, .parallel = TRUE)
+
+boxplot (t (no.test $ RS.B.term))
+
+### ML.B, for real
+options(contrasts = c('contr.sum', 'contr.poly'))
+
+ml.BW.calc <- list ()
+ml.BW.calc $ data <- ldply (OneDef [27:38], function (L) L $ local)
+
+ml.BW.calc $ formula <- paste (colnames (ml.BW.calc $ data) [-1], collapse = ', ')
+ml.BW.calc $ formula <- paste ('cbind(', ml.BW.calc $ formula, ') ~ .id', sep = '')
+ml.BW.calc $ formula <- as.formula(ml.BW.calc $ formula)
+
+ml.BW.calc $ formula
+
+ml.BW.calc $ model <- lm (ml.BW.calc $ formula, data = ml.BW.calc $ data)
+
+str (ml.BW.calc $ model)
+
+ml.BW.calc $ sigT <- var (as.matrix (ml.BW.calc $ data [-1]))
+ml.BW.calc $ sigT <- ml.BW.calc $ sigT * (nrow (ml.BW.calc $ data) - 1)
+
+ml.BW.calc $ sigW <- CalculateMatrix(ml.BW.calc $ model)
+ml.BW.calc $ sigW <- ml.BW.calc $ sigW *
+  (nrow (ml.BW.calc $ data) - length (unique (ml.BW.calc $ data $ .id)) - 1)
+
+ml.BW.calc $ sigB <- ml.BW.calc $ sigT - ml.BW.calc $ sigW
+ml.BW.calc $ sigB <- ml.BW.calc $ sigB / (length (unique (ml.BW.calc $ data $ .id)) - 1)
+
+KrzCor (ml.BW.calc $ sigB, no.test $ B.ml)
+
+plot (eigen (ml.BW.calc $ sigB) $ values)
+
+no.test $ Krz.B <-
+  laply (no.test $ ext, DiagB, B.ml = ml.BW.calc $ sigB,
+         parallel = FALSE, .parallel = TRUE, ret.dim = 12)
+
+boxplot (t (no.test $ Krz.B [, , 1]))
+
+boxplot (t (laply (no.test $ ext, function (L)
+                   aaply(L $ Sigma, 1, RandomSkewers, cov.y = ml.BW.calc $ sigW) [, 1],
+                   .parallel = TRUE)))
