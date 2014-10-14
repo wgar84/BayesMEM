@@ -7,8 +7,9 @@ mainModel <-
   {
     stan.data <- list()
     subtree <- extract.clade(tree, node)
-    stan.data $ C <- vcvPhylo (subtree,
-                               anc.nodes = ifelse (grepl ('_Anc', model), TRUE, FALSE))
+    stan.data $ C <-
+      solve (vcvPhylo (subtree,
+                       anc.nodes = ifelse (grepl ('_Anc', model), TRUE, FALSE)))
     subset <- match (subtree $ tip.label, names(main.data))
     if (what == 'local')
       raw.data <- llply (main.data [subset], function (L) L $ local)
@@ -39,23 +40,31 @@ mainModel <-
                     Gamma <- array (t (chol (cov2cor (prior.list $ vcv))),
                                     c(stan.data$k, stan.data$k, stan.data$m))
                                         # cholesky_factor_corr[k] Gamma[m] (m x k x k)
-                    Gamma <- aperm (Gamma, c(3, 1, 2))
-                    sigma <- t (array (diag (prior.list $ vcv),
+                    GammaW <- aperm (Gamma, c(3, 1, 2))
+                    sigmaW <- t (array (diag (prior.list $ vcv),
                                        c(stan.data$k, stan.data$m)))
                   }
                 else
                   {
-                    Gamma <- t (chol (cov2cor (prior.list $ vcv)))
-                    sigma <- diag (prior.list $ vcv)
+                    GammaW <- t (chol (cov2cor (prior.list $ vcv)))
+                    sigmaW <- diag (prior.list $ vcv)
                   }
                 if (grepl ('_Anc', model))
                   ancestor <-
                     rmvnorm (stan.data$m - 2, prior.list $ mean,
                              prior.list $ vcv)
-                if (grepl ('alt', model))
-                  drift <- 1
-                Gamma_beta <- t (chol (cov2cor (prior.list $ vcv)))
-                sigma_beta <- diag (prior.list $ vcv)
+                if (grepl ('pcaS', model))
+                  {
+                    dim.flag <- ifelse (stan.data $ k >= stan.data $ m,
+                                        stan.data $m - 1, stan.data $k)
+                    GammaB <- t (chol (diag (dim.flag)))
+                    sigmaB <- rep (1, times = dim.flag)
+                  }
+                else
+                  {
+                    GammaB <- t (chol (cov2cor (prior.list $ vcv)))
+                    sigmaB <- diag (prior.lis $ vcv)
+                  }
               })
     model.file <- paste ('../Stan/', model, '.stan', sep = '')
     model.fit <- stan (file = model.file, chains = 1, 
