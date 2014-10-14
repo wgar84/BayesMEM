@@ -52,8 +52,9 @@ model {
   matrix[k,k] invSigmaB;
   matrix[2 * (m-1),k] eXbar;
   
-  /** priors pra que? =P **/
+  /** priors **/
   
+  Gamma_beta ~ lkj_corr_cholesky(2); // só pra dar um pouco mais de densidade pra I_k
   
   /** brownian **/
 
