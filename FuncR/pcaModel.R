@@ -16,24 +16,17 @@ pcaModel <-
       {
         raw.data <- llply (main.data [subset], function (L) L $ local)
         raw.data.df <- ldply (main.data [subset], function (L) L $ local)
-        formula.mlW <- paste (colnames (raw.data.df) [-1], collapse = ', ')
-        formula.mlW <- paste ('cbind(', formula.mlW, ') ~ .id', sep = '')
-        formula.mlW <- as.formula(formula.mlW)
-        model.mlW <- lm (formula.mlW, data = raw.data.df)
-        mlW <- CalculateMatrix (model.mlW)
-        eigenW <- eigen (mlW)
+        
       }
     if (what == 'ed')
       {
         raw.data <- llply (main.data [subset], function (L) L $ ed)
         raw.data.df <- ldply (main.data [subset], function (L) L $ ed)
-        formula.mlW <- paste (colnames (raw.data.df) [-1], collapse = ', ')
-        formula.mlW <- paste ('cbind(', formula.mlW, ') ~ .id', sep = '')
-        formula.mlW <- as.formula(formula.mlW)
-        model.mlW <- lm (formula.mlW, data = raw.data.df)
-        mlW <- CalculateMatrix (model.mlW)
-        eigenW <- eigen (mlW)
       }
+    formula.mlW <- paste (colnames (raw.data.df) [-1], collapse = ', ')
+    formula.mlW <- paste ('cbind(', formula.mlW, ') ~ .id', sep = '')
+    formula.mlW <- as.formula(formula.mlW)
+    model.mlW <- lm (formula.mlW, data = raw.data.df)
     stan.data <-
       within (stan.data,
               {
@@ -43,31 +36,44 @@ pcaModel <-
                 ni <- laply (raw.data, function (L) nrow (L))
                 ni_max <- max (ni)
                 X <- array (0, c(m, ni_max, k))
-                raw.rotated <-
-                  llply (raw.data, function (L) t (eigenW $ vectors [,1:k]) %*% L)
-                raw.means <- laply (raw.rotated, colMeans)
+              })
+    aux <- list()
+    aux <- within(aux,
+                  {
+                    mlW <- CalculateMatrix (model.mlW)
+                    eigenW <- eigen (mlW)
+                    raw.rotated <-
+                      llply (raw.data,
+                             function (L)
+                             t (t (eigenW $ vectors [,1:stan.data $ k]) %*% t (L)))
+                    raw.means <- laply (raw.rotated, colMeans)
+                    W.pca <- diag (eigenW $ values [1:stan.data $ k])
+                    B.pca <- var(raw.means)
+                    grand.mean <- colMeans(raw.means)
+                    jitter.mean <- rmvnorm(stan.data $ m, sigma = W.pca)
+                  })
+    stan.data <-
+      within (stan.data,
+              {
                 for (i in 1:m)
-                  X [i, 1:ni[i], ] <- raw.rotated [[i]]
+                  X [i, 1:ni[i], ] <- aux $ raw.rotated [[i]]
               })
     start.values <- list()
     start.values $ c1 <- list()
     start.values $ c1 <- 
       within (start.values $ c1,
               {
-                W.pca <- diag (stan.data $ eigenW $ values)
-                B.pca <- var(stan.data $ raw.means)
-                grand.mean <- colMeans(stan.data $ raw.means)
-                BW.vcv <- var(stan.data $ raw.means)
-                terminal <- stan.data $ raw.means +
-                  rmvnorm(m, sigma = W.pca)
-                root <- rmvnorm(1, grand.mean, W.pca)
-                ancestor <- rmvnorm(m - 2, grand.mean, sigma = W.pca)
-                GammaW <- diag(stan.data$k)
-                sigmaW <- sqrt(diag (W.pca))
-                GammaB <- t(chol(B.pca))
-                sigmaB <- sqrt(diag(B.pca))
+                terminal <- aux $ raw.means + aux $ jitter.mean
+                root <- c(rmvnorm(1, aux $ grand.mean, aux $ W.pca))
+                ancestor <- rmvnorm(stan.data $ m - 2, aux $ grand.mean,
+                                    sigma = aux $ W.pca)
+                GammaW <- diag(stan.data $ k)
+                sigmaW <- sqrt(diag (aux $ W.pca))
+                GammaB <- t(chol(aux $ B.pca))
+                sigmaB <- sqrt(diag(aux $ B.pca))
               })
     model.fit <- stan (file = '../Stan/oneSigma_Anc.stan', chains = 1, 
                        data = stan.data, init = start.values, ...)
-    return (model.fit)
+    return (list ('model' = model.fit, 'data' = stan.data, 'start' = start.values,
+                  'aux' = aux))
   }

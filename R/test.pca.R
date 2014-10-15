@@ -26,20 +26,16 @@ attach ('../../covTensor/Work/post.vcv.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-failMainModel <- failwith(NULL, mainModel)
+pcaModel.fail <- failwith(NULL, pcaModel)
 
 pcaTest <-
   alply(1:12, 1, function (i)
-        failMainModel(138, OneDef, Tree [[1]], 'local',
-                      list ('mean' = OneDef [[i+26]] $ mean,
-                            'vcv' = 10*OneDef[['Callithrix_kuhlii']] $ml.vcv),
-                      model = 'pcaSigma_Anc',
+        pcaModel.fail(138, OneDef, Tree [[1]], 'local',
                       pars = c('terminal', 'root', 'ancestor',
-                        'SigmaW', 'SigmaB_W', 'SigmaB'),
+                        'SigmaW', 'SigmaB'),
                       control = list ('chain_id' = i),
                       warmup = 500, iter = 1000, thin = 5),
         .parallel = TRUE)
-
 
 save (pcaTest, file = 'pcaTest.RData')
 
