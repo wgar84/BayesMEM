@@ -35,18 +35,21 @@ for (i in 1:length (.source.files))
 
 failMainModel <- failwith(NULL, mainModel)
 
-pcaTest <-
+noTest <-
   alply(1:12, 1, function (i)
-        failMainModel(138, OneDef, Tree [[1]], 'local',
+        failMainModel(138, OneDef, Tree [[1]], 'local', corC = TRUE, 
                       list ('mean' = OneDef [[i+26]] $ mean,
                             'vcv' = 10*OneDef[['Callithrix_kuhlii']] $ml.vcv),
-                      model = 'pcaSigma_Anc',
+                      model = 'oneSigma_Anc',
                       pars = c('terminal', 'root', 'ancestor',
-                        'SigmaW', 'SigmaB_W', 'SigmaB'),
+                        'SigmaW', 'SigmaB'),
                       control = list ('chain_id' = i),
                       warmup = 500, iter = 1000, thin = 5),
         .parallel = TRUE)
 
+save (noTest, file = 'noTest.RData')
 
-save (pcaTest, file = 'pcaTest.RData')
+
+
+
 

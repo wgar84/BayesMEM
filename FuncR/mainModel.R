@@ -3,13 +3,17 @@ require (phytools)
 
 mainModel <-
   function (node, main.data, tree, what = 'local',  
-            prior.list, model = 'oneSigma_noAnc', ...)
+            prior.list, model = 'oneSigma_noAnc', corC = TRUE, ...)
   {
     stan.data <- list()
     subtree <- extract.clade(tree, node)
     stan.data $ C <-
-      solve (vcvPhylo (subtree,
-                       anc.nodes = ifelse (grepl ('_Anc', model), TRUE, FALSE)))
+      vcvPhylo (subtree,
+                anc.nodes = ifelse (grepl ('_Anc', model), TRUE, FALSE))
+    if (corC)
+      stan.data $ C <- solve (cov2cor (stan.data $ C))
+    else
+      stan.data $ C <- solve (stan.data $ C)
     subset <- match (subtree $ tip.label, names(main.data))
     if (what == 'local')
       raw.data <- llply (main.data [subset], function (L) L $ local)
@@ -86,18 +90,18 @@ mainModel <-
                           names (dimnames (L)) [i] <- 'trait'
                           dimnames (L) [[i]] <- colnames (raw.data [[1]])
                         }
-                    change.m <- length (which (dim (L) == 2*stan.data $ m - 2)) != 0
+                    change.m <- length (which (dim (L) == stan.data $ m)) != 0
                     if (change.m)
                       for (i in which (dim (L) == stan.data $ m))
                         {
                           names (dimnames (L)) [i] <- 'node'
                           dimnames (L) [[i]] <- subtree $ tip.label
                         }
-                   if (ifelse (grepl ('_Anc', model), TRUE, FALSE))
-                     {
-                       change.mm <- length (which (dim (L) == stan.data $ m - 2)) != 0
-                       if (change.mm)
-                         for (i in which (dim (L) == stan.data $ m - 2))
+                    if (ifelse (grepl ('_Anc', model), TRUE, FALSE))
+                      {
+                        change.mm <- length (which (dim (L) == stan.data $ m - 2)) != 0
+                        if (change.mm)
+                          for (i in which (dim (L) == stan.data $ m - 2))
                            {
                              names (dimnames (L)) [i] <- 'node'
                              dimnames (L) [[i]] <-
