@@ -35,7 +35,7 @@ for (i in 1:length (.source.files))
 
 failMainModel <- failwith(NULL, mainModel)
 
-sampleMeans <- sample (1:40, 12)
+sampleMeans <- sample(1:40, 12)
 
 noTest <-
   alply(1:12, 1, function (i)

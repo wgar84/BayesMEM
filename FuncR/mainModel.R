@@ -45,13 +45,13 @@ mainModel <-
                                     c(stan.data$k, stan.data$k, stan.data$m))
                                         # cholesky_factor_corr[k] Gamma[m] (m x k x k)
                     GammaW <- aperm (Gamma, c(3, 1, 2))
-                    sigmaW <- t (array (diag (prior.list $ vcv),
+                    sigmaW <- t (array (sqrt (diag (prior.list $ vcv)),
                                        c(stan.data$k, stan.data$m)))
                   }
                 else
                   {
                     GammaW <- t (chol (cov2cor (prior.list $ vcv)))
-                    sigmaW <- diag (prior.list $ vcv)
+                    sigmaW <- sqrt (diag (prior.list $ vcv))
                   }
                 if (grepl ('_Anc', model))
                   ancestor <-
@@ -61,7 +61,7 @@ mainModel <-
                   {
                     drift <- 1
                     Gamma_beta <- t (chol (cov2cor (prior.list $ vcv)))
-                    sigma_beta <- diag (prior.list $ vcv)
+                    sigma_beta <- sqrt (diag (prior.list $ vcv))
                   }
                 if (grepl ('pcaS', model))
                   {
@@ -73,7 +73,7 @@ mainModel <-
                 else
                   {
                     GammaB <- t (chol (cov2cor (prior.list $ vcv)))
-                    sigmaB <- diag (prior.list $ vcv)
+                    sigmaB <- sqrt (diag (prior.list $ vcv))
                   }
               })
     model.file <- paste ('../Stan/', model, '.stan', sep = '')
