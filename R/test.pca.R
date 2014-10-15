@@ -21,13 +21,6 @@ attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
 attach ('../../covTensor/Work/post.vcv.RData')
 
-## RAxML.tree <- read.tree ('raxml.nm.tre')
-## RAxML.tree <- treedata (RAxML.tree, OneDef, TRUE) $ phy
-## Tree [[5]] <- RAxML.tree
-## names (Tree) [5] <- 'raxml.nm'
-## save (Tree, file = '../../Databases/Tree.RData')
-## plot (RAxML.tree, direction = 'upwards')
-
 .source.files <- dir('../FuncR/', pattern = '.R', full.names = TRUE)
 .source.files <- .source.files [!grepl ('~', .source.files)]
 for (i in 1:length (.source.files))
