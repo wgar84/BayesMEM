@@ -12,8 +12,8 @@ DiagQuantilePop <- function (node, extract.stanfit,
             
     dimnames (or.quant) [[1]] <- names (or.pops)
 
-    sampled.means <- extract.stanfit $ Xbar [, 1:n.extant, ]
-    sampled.vcv <- extract.stanfit $ Sigma
+    sampled.means <- extract.stanfit $ terminal 
+    sampled.vcv <- extract.stanfit $ SigmaW
 
     sim.quant <-
       aaply(1:(dim (sampled.means) [2]), 1, function (i)

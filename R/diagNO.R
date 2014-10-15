@@ -29,17 +29,17 @@ attach ('../../covTensor/Work/post.vcv.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-attach ('TestNO.RData')
+attach ('noTest.RData')
 
 no.test <- list()
-no.test $ ext <- llply (Test.NoPrior, function (L) L $ ext)
-#no.test $ ext <- no.test $ ext [-7]
+no.test $ ext <- llply (noTest, function (L) L $ ext)
+no.test $ ext <- no.test $ ext [!laply (llply (no.test $ ext, names), is.null)]
 
 no.test $ subtree <- extract.clade(Tree [[5]], 138)
 
 ### QUANTIS
 no.test $ diag.quant <- llply (no.test $ ext, function (L)
-                                DiagQuantilePop(138, L, OneDef, Tree [[5]],
+                                DiagQuantilePop(138, L, OneDef, Tree [[1]],
                                                 at = c(0, 0.25, 0.75, 1)),
                                 .parallel = TRUE)
 
@@ -51,7 +51,7 @@ dev.off (dev.cur ())
 ### TRACE
 
 no.test $ combine <-
-  extract (sflist2stanfit (llply (Test.NoPrior, function (L) L $ model)))
+  extract (sflist2stanfit (llply (noTest [-c(2, 10, 12)], function (L) L $ model)))
 
 no.test $ combine <-
   llply (no.test $ combine,
@@ -64,11 +64,18 @@ no.test $ combine <-
                  dimnames (L) [[i]] <- dimnames (no.test $ ext [[1]] [[1]]) $ trait
                  names (dimnames (L)) [i] <- 'trait'
                }
-           change.m <- which (dim (L) == 22)
+           change.m <- which (dim (L) == 12)
            if (length (change.m) > 0)
              for (i in change.m)
                {
                  dimnames (L) [[i]] <- dimnames (no.test $ ext [[1]] [[1]]) $ node
+                 names (dimnames (L)) [i] <- 'node'
+               }
+           change.m <- which (dim (L) == 10)
+           if (length (change.m) > 0)
+             for (i in change.m)
+               {
+                 dimnames (L) [[i]] <- as.character (14:23)
                  names (dimnames (L)) [i] <- 'node'
                }
            L

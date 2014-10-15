@@ -37,7 +37,7 @@ failMainModel <- failwith(NULL, mainModel)
 
 noTest <-
   alply(1:12, 1, function (i)
-        failMainModel(138, OneDef, Tree [[1]], 'local', corC = TRUE, 
+        failMainModel(111, OneDef, Tree [[1]], 'local', corC = TRUE, 
                       list ('mean' = OneDef [[i+26]] $ mean,
                             'vcv' = 10*OneDef[['Callithrix_kuhlii']] $ml.vcv),
                       model = 'oneSigma_Anc',
