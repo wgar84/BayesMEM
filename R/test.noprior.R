@@ -35,11 +35,13 @@ for (i in 1:length (.source.files))
 
 failMainModel <- failwith(NULL, mainModel)
 
+sampleMeans <- sample (1:40, 12)
+
 noTest <-
   alply(1:12, 1, function (i)
         failMainModel(111, OneDef, Tree [[1]], 'local', corC = TRUE, 
-                      list ('mean' = OneDef [[i+26]] $ mean,
-                            'vcv' = 10*OneDef[['Callithrix_kuhlii']] $ml.vcv),
+                      list ('mean' = OneDef [[sampleMeans [i]]] $ mean,
+                            'vcv' = 10 * post.vcv $ ss.grand.mean),
                       model = 'oneSigma_Anc',
                       pars = c('terminal', 'root', 'ancestor',
                         'SigmaW', 'SigmaB'),
@@ -47,7 +49,7 @@ noTest <-
                       warmup = 500, iter = 1000, thin = 5),
         .parallel = TRUE)
 
-save (noTest, file = 'noTest.RData')
+save (noTest, sampleMeans, file = 'noTest.RData')
 
 
 
