@@ -1,17 +1,18 @@
 DiagQuantilePop <- function (node, extract.stanfit,
-                             main.data, tree, what = 'local', at = c (0, 0.5, 1))
+                             main.data, or.pops = NULL,
+                             tree, what = 'local', at = c (0, 0.5, 1))
   {
     subtree <- extract.clade(tree, node)
     n.extant <- length (subtree $ tip.label)
-    or.pops <- llply (main.data [match (subtree $ tip.label, names (main.data))],
-                      function (L) L [[what]])
+    if (is.null (or.pops))
+      or.pops <- llply (main.data [match (subtree $ tip.label, names (main.data))],
+                        function (L) L [[what]])
     or.quant <-
       laply (or.pops, function (L) aaply (L, 2, quantile, probs = at))
 
     or.sample.sizes <- laply (or.pops, nrow)
             
     dimnames (or.quant) [[1]] <- names (or.pops)
-
     sampled.means <- extract.stanfit $ terminal 
     sampled.vcv <- extract.stanfit $ SigmaW
 

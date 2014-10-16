@@ -24,7 +24,7 @@ DiagTrace <- function (extraction, reference.value = NULL)
     
     Plots $ ancestor <-
       ggplot (ancestor.df, 
-              aes (x = iterations, y = value, color = node)) +
+              aes (x = iterations, y = value, color = as.character (node))) +
                 geom_line() +
                   theme_minimal() +
                     facet_wrap(~ trait, scales = 'free_y')
@@ -32,8 +32,8 @@ DiagTrace <- function (extraction, reference.value = NULL)
     if (!is.null(reference.value))
       {
         ref.df <- melt (reference.value)
-        ref.df $ trait <- names (reference.value)
-
+        ref.df $ trait <- unique (root.df $ trait)
+        
         Plots <-
           llply (Plots, function (Gr)
                  Gr + geom_hline (aes (yintercept = value), ref.df))

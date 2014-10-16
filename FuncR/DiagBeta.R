@@ -36,11 +36,11 @@ DiagBeta <- function (PostBeta, Tree, slice = 'logCS')
             theme_minimal() + labs(title = paste ('Selection for ', slice, sep = '')) +
               theme(axis.text.x = element_text(angle = 90, size = 7, hjust = 1))
     
-    Beta.plot <- 
-      Beta.plot + annotate('text', x = (1:nrow (Beta.summary)) [Beta.summary $ zero.out],
-                           y = max.upper + (max.upper / 10),
-                           label = rep ('*', times = sum (Beta.summary $ zero.out)),
-                           size = 7)
+    ## Beta.plot <- 
+    ##   Beta.plot + annotate('text', x = (1:nrow (Beta.summary)) [Beta.summary $ zero.out],
+    ##                        y = max.upper + (max.upper / 10),
+    ##                        label = rep ('*', times = sum (Beta.summary $ zero.out)),
+    ##                        size = 7)
 
     print(Beta.plot, newpage = FALSE)
     popViewport()

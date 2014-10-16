@@ -19,11 +19,6 @@ DiagGelman <- function (extract.list, parallel = TRUE)
                to.replace <- which (colnames (L) == 'trait')
                if (length (to.replace) > 1)
                  colnames (L) [to.replace [2]] <- 'trait2'
-               with.node <- which (colnames (L) == 'node')
-               if (length (with.node) > 0)
-                 L $ anc <- 
-                   c('ancestor', 'terminal') [is.na (
-                     as.numeric (as.character(L $ node))) + 1]
                L
              }, .parallel = parallel)
     LogP <- theta.lod $ lp__
@@ -34,7 +29,7 @@ DiagGelman <- function (extract.list, parallel = TRUE)
                colL <- colnames (L)
                formL <- colL [-c(which (colL == 'iterations'),
                                  which (colL == 'value'))]
-                       formL
+               formL
              }, .parallel = parallel)
     theta.varT.form <-
       llply (theta.lod, function (L)
@@ -50,6 +45,13 @@ DiagGelman <- function (extract.list, parallel = TRUE)
              ddply (theta.lod [[i]], theta.varW.form [[i]],
                     summarise,
                     var.w = var (value)), .parallel = parallel)
+    theta.varW <- llply (theta.varW, function (L)
+                         {
+                           if (any (colnames (L) == 'node'))
+                             if (is.integer (L $ node))
+                               L $ node <- factor (as.character (L $ node))
+                           L
+                         })
     theta.varW <-
       alply (1:length (theta.varW), 1, function (i)
              ddply (theta.varW [[i]], theta.varT.form [[i]],
@@ -59,6 +61,14 @@ DiagGelman <- function (extract.list, parallel = TRUE)
       alply (1:length (theta.lod), 1, function (i)
              ddply (theta.lod [[i]], theta.varT.form [[i]], summarise,
                     var.t = var (value)), .parallel = parallel)
+    theta.varT <- llply (theta.varT, function (L)
+                         {
+                           if (any (colnames (L) == 'node'))
+                             if (is.integer (L $ node))
+                             L $ node <- factor (as.character (L $ node),
+                                                 levels = unique (L $ node))
+                           L
+                         })
     names (theta.varT) <- names (theta.varW) <- names (theta.lod)
     theta.varT <- melt (theta.varT)
     theta.varW <- melt (theta.varW)
@@ -66,7 +76,6 @@ DiagGelman <- function (extract.list, parallel = TRUE)
     theta.var <- theta.varW
     theta.var <- theta.var [-which (colnames (theta.var) == 'variable')]
     colnames (theta.var) [which (colnames (theta.var) == 'value')] <- 'var.w'
-
     Plots <- list ()
     Plots <-
       within (Plots,
