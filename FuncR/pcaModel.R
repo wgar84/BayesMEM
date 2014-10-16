@@ -33,8 +33,7 @@ pcaModel <-
               {
                 m <- length (subtree $ tip.label)
                 k <- ncol (raw.data [[1]])
-                if (reduce.dim)
-                  k <- ifelse (k >= m, m - 1, k)
+                k <- ifelse (k >= m, m - 1, k)
                 ni <- laply (raw.data, function (L) nrow (L))
                 ni_max <- max (ni)
                 X <- array (0, c(m, ni_max, k))
