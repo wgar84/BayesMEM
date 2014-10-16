@@ -92,11 +92,12 @@ model {
   /** brownian **/
   
   for(i in 1:m)
-    exbar[i] <- to_row_vector (terminal[i] - root);
-
-  for(i in 1:(m-2))
-    exbar[i+m] <- to_row_vector (ancestor[i] - root);
-  
+    {
+      exbar[i] <- to_row_vector (terminal[i] - root);
+      if(i < m-1)
+	exbar[i+m] <- to_row_vector (ancestor[i] - root);
+    }
+ 
   llikB <- - 0.5 * (trace_gen_quad_form(inverse_spd(SigmaW), C, exbar) +
 		    2 * (m - 1) * log_determinant(SigmaW));
   
@@ -105,8 +106,7 @@ model {
   /** pops **/
 
   for(i in 1:m)
-    for(j in 1:(ni[i]))
-      X[i,j] ~ multi_normal_cholesky(terminal[i], SigmaW);
+    head(X[i], ni[i]) ~ multi_normal(terminal[i], SigmaW); //subset não-nulo de X[i]
 }
 
 generated quantities {

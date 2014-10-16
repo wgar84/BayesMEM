@@ -54,12 +54,16 @@ runcie.data <-
           })
   
 
-runcie.test <- alply (1:4, 1, function (i)
-                      stan('../Stan/oneSigma_Anc_runcie.stan', data = runcie.data,
-                           pars = c('terminal', 'ancestor', 'root',
-                             'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB'),
-                           warmup = 500, iter = 1000, thin = 5, chains = 1,
-                           control = list ('chain_id' = i)),
-                      .parallel = TRUE)
+fail.runcie <-
+  failwith(NULL, function (i)
+           stan('../Stan/oneSigma_Anc_runcie.stan', data = runcie.data,
+                pars = c('terminal', 'ancestor', 'root',
+                  'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB'),
+              warmup = 500, iter = 1000, thin = 5, chains = 1,
+                control = list ('chain_id' = i)))
+
+runcie.test <- alply (1:4, 1, fail.runcie, .parallel = TRUE)
 
 save (runcie.test, file = 'testRuncie.RData')
+
+rm (list = ls())
