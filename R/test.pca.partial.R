@@ -39,3 +39,4 @@ pcaTest <-
 
 save (pcaTest, file = 'pcaTest.RData')
 
+rm (list = ls())
