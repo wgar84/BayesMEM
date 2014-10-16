@@ -5,21 +5,18 @@ data {
   int ni[m]; // amostras
   int ni_max; // máximo amostra
   vector[k] X[m,ni_max]; // dados
+  int n_pc;
+  matrix[k,n_pc] eigen_Wml; //
   //vector[k] priorX;
   //cov_matrix[k] priorS;
 }
 
 transformed data {
   vector[k] zero_vector;
-  int dim_flag;
   
   for (i in 1:k)
     zero_vector[i] <- 0;
 
-  if (k >= m)
-    {dim_flag <- m - 1;}
-  else
-    {dim_flag <- k;}
 }
 
 
@@ -31,37 +28,23 @@ parameters {
   cholesky_factor_corr[k] GammaW; // Sigma = sGG's
   vector<lower=0>[k] sigmaW;
 
-  cholesky_factor_corr[dim_flag] GammaB; 
-  vector<lower=0>[dim_flag] sigmaB;
+  cholesky_factor_corr[n_pc] GammaB; 
+  vector<lower=0>[n_pc] sigmaB;
 }
-
-
-transformed parameters {
-
-  cov_matrix[k] SigmaW;
-  
-  matrix[k,k] eigen_vec;
-  matrix[k,dim_flag] eigen_vec_trimmed;
-  
-  SigmaW <- quad_form_diag(multiply_lower_tri_self_transpose(GammaW), sigmaW);
-
-  eigen_vec <- eigenvectors_sym(SigmaW);
-  eigen_vec_trimmed <- block(eigen_vec, 1, 1, k, dim_flag);
-}
-
 
 model {
   real ldetB;
   real llikB; 
   
-  matrix[dim_flag,dim_flag] invGammaB;
+  matrix[n_pc,n_pc] invGammaB;
   vector[k] ex[m,ni_max];
   matrix[2 * (m-1),k] exbar;
+  matrix[2 * (m-1),n_pc] exbar_W;
 
-  matrix[2 * (m-1),dim_flag] exbar_W;
-    
   /** priors **/
-  
+ 
+  // GammaB ~ lkj_corr_cholesky(2) // need it?
+ 
   /** pops **/
   
   for(i in 1:m)
@@ -82,7 +65,7 @@ model {
   for(i in 1:(m-2))
     exbar[i+m] <- to_row_vector(ancestor[i] - root);
 
-  exbar_W <- exbar * eigen_vec_trimmed;
+  exbar_W <- exbar * eigen_Wml;
   
   for(i in 1:(2*(m-1)))
     exbar_W[i] <- exbar_W[i] ./ to_row_vector(sigmaB);
@@ -93,16 +76,18 @@ model {
   invGammaB <- inverse_spd(multiply_lower_tri_self_transpose(GammaB));
   
   llikB <- - 0.5 * (trace_gen_quad_form(invGammaB, C, exbar_W));
-  llikB <- llikB - ((m - 1) * ldetB);
+  llikB <- llikB - ((m - 1) * ldetB); ### * 2 * 0.5
   
   increment_log_prob(llikB);
   
 }
 
 generated quantities {
-  cov_matrix[dim_flag] SigmaB_W;
+  cov_matrix[n_pc] SigmaB_W;
   matrix[k,k] SigmaB;
+  cov_matrix[k] SigmaW;
   
   SigmaB_W <- quad_form_diag(multiply_lower_tri_self_transpose(GammaB), sigmaB);
-  SigmaB <- quad_form_sym(SigmaB_W, eigen_vec_trimmed');
+  SigmaB <- quad_form_sym(SigmaB_W, eigen_Wml');
+  SigmaW <- quad_form_diag(multiply_lower_tri_self_transpose(GammaW), sigmaW);
 }

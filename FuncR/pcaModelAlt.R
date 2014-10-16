@@ -1,6 +1,6 @@
-pcaModel <-
-  function (node, main.data, tree, what = 'local', corC = TRUE,
-            filter.sv = 1e2, ...)
+pcaModelAlt <-
+  function (node, main.data, tree, what = 'local', corC = TRUE, ...,
+            filter.sv = 1e2)
   {
     options (contrasts = c('contr.sum', 'contr.poly'))
     require (mvtnorm)
@@ -17,7 +17,6 @@ pcaModel <-
       {
         raw.data <- llply (main.data [subset], function (L) L $ local)
         raw.data.df <- ldply (main.data [subset], function (L) L $ local)
-        
       }
     if (what == 'ed')
       {
@@ -33,11 +32,12 @@ pcaModel <-
               {
                 m <- length (subtree $ tip.label)
                 k <- ncol (raw.data [[1]])
-                if (reduce.dim)
-                  k <- ifelse (k >= m, m - 1, k)
+                n_pc <- ifelse (k >= m, m - 1, k)
                 ni <- laply (raw.data, function (L) nrow (L))
                 ni_max <- max (ni)
                 X <- array (0, c(m, ni_max, k))
+                for (i in 1:m)
+                  X [i, 1:ni[i], ] <- raw.data [[i]]
               })
     aux <- list()
     aux <- within(aux,
@@ -47,34 +47,29 @@ pcaModel <-
                     raw.rotated <-
                       llply (raw.data,
                              function (L)
-                             t (t (eigenW $ vectors [,1:stan.data $ k]) %*% t (L)))
-                    raw.means <- laply (raw.rotated, colMeans)
-                    W.pca <- diag (eigenW $ values [1:stan.data $ k])
-                    B.pca <- var(raw.means)
-                    grand.mean <- colMeans(raw.means)
-                    jitter.mean <- rmvnorm(stan.data $ m, sigma = filter.sv * W.pca)
+                             t (t (eigenW $ vectors [,1:stan.data $ n_pc]) %*% t (L)))
+                    pca.means <- laply (raw.rotated, colMeans)
+                    raw.means <- laply (raw.data, colMeans)
+                    raw.gmean <- colMeans (raw.means)
+                    B.pca <- var(pca.means)
+                    jitter.mean <- rmvnorm(stan.data $ m, sigma = filter.sv * mlW)
                   })
-    stan.data <-
-      within (stan.data,
-              {
-                for (i in 1:m)
-                  X [i, 1:ni[i], ] <- aux $ raw.rotated [[i]]
-              })
+    stan.data $ eigen_Wml <- aux $ eigenW $ vectors [,1:stan.data $ n_pc]
     start.values <- list()
     start.values $ c1 <- list()
     start.values $ c1 <- 
       within (start.values $ c1,
               {
                 terminal <- aux $ raw.means + aux $ jitter.mean
-                root <- c(rmvnorm(1, aux $ grand.mean, filter.sv * aux $ W.pca))
-                ancestor <- rmvnorm(stan.data $ m - 2, aux $ grand.mean,
-                                    sigma = filter.sv * aux $ W.pca)
+                root <- c(rmvnorm(1, aux $ raw.gmean, filter.sv * aux $ mlW))
+                ancestor <- rmvnorm(stan.data $ m - 2, aux $ raw.gmean,
+                                    sigma = filter.sv * aux $ mlW)
                 GammaW <- diag(stan.data $ k)
-                sigmaW <- sqrt(filter.sv * diag (aux $ W.pca))
+                sigmaW <- sqrt(filter.sv * diag(aux $ mlW))
                 GammaB <- t(chol(cov2cor (aux $ B.pca)))
-                sigmaB <- sqrt(diag(filter.sv * aux $ B.pca))
+                sigmaB <- sqrt(filter.sv * diag(aux $ B.pca))
               })
-    model.fit <- stan (file = '../Stan/oneSigma_Anc.stan', chains = 1, 
+    model.fit <- stan (file = '../Stan/pcaSigma_Anc.stan', chains = 1, 
                        data = stan.data, init = start.values, ...)
     return (list ('model' = model.fit, 'data' = stan.data, 'start' = start.values,
                   'aux' = aux))
