@@ -35,14 +35,14 @@ parameters {
   vector[k] ancestor[m-2];
   vector[k] root;
   // factors
-  matrix[k,n_fac] LambdaW;
-  matrix[k,n_fac] LambdaB;
+  matrix[n_fac,k] LambdaW;
+  matrix[n_fac,k] LambdaB;
   // trait specific
   vector<lower=0>[k] PsiW;
   vector<lower=0>[k] PsiB;
   // precision for lambda
-  matrix<lower=0>[k,n_fac] phiW;
-  matrix<lower=0>[k,n_fac] phiB;
+  matrix<lower=0>[n_fac,k] phiW;
+  matrix<lower=0>[n_fac,k] phiB;
   // shrinkage
   vector<lower=0>[n_fac] deltaW;
   vector<lower=0>[n_fac] deltaB;
@@ -65,34 +65,29 @@ model {
   
   /** hyper **/
 
-  deltaW[1] ~ gamma(a1W, b1W);
-  deltaB[1] ~ gamma(a1B, b1B);
-  tauW[1] <- deltaW[1];
-  tauB[1] <- deltaB[1];
-  
-  for(i in 2:n_fac)
+  PsiW ~ inv_gamma(asW, bsW);
+  PsiB ~ inv_gamma(asB, bsB);
+  for(i in 1:n_fac)
     {
-      deltaW[i] ~ gamma(a2W, b2W);
-      tauW[i] <- prod(head(deltaW, i));
-      deltaB[i] ~ gamma(a2B, b2B);
-      tauB[i] <- prod(head(deltaB, i));
-    }
-
-  for(i in 1:k)
-    {
-      PsiW[i] ~ inv_gamma(asW, bsW);
-      PsiB[i] ~ inv_gamma(asB, bsB);
-      for(j in 1:n_fac)
+      if (i == 1)
 	{
-	  phiW[i,j] ~ gamma(0.5 * niW, 0.5 * niW);
-	  LambdaW[i,j] ~ normal(0, (phiW[i,j] * tauW[j])^(-1));
-	  phiB[i,j] ~ gamma(0.5 * niB, 0.5 * niB);
-	  LambdaB[i,j] ~ normal(0, (phiB[i,j] * tauB[j])^(-1));
+	  deltaW[i] ~ gamma(a1W, b1W);
+	  deltaB[i] ~ gamma(a1B, b1B);
 	}
+      else
+	{
+	  deltaW[i] ~ gamma(a2W, b2W);
+	  deltaB[i] ~ gamma(a2B, b2B);
+	}
+      tauW[i] <- prod(head(deltaW, i));
+      tauB[i] <- prod(head(deltaB, i));
+      phiW[i] ~ gamma(0.5 * niW, 0.5 * niW);
+      phiB[i] ~ gamma(0.5 * niB, 0.5 * niB);
+      LambdaW[i] ~ normal(0, exp(-log(phiW[i] * tauW[i]))); // invertendo, esquisito
+      LambdaB[i] ~ normal(0, exp(-log(phiB[i] * tauB[i])));
     }
-  
-  SigmaW <- tcrossprod(LambdaW) + diag_matrix(PsiW);
-  SigmaB <- tcrossprod(LambdaB) + diag_matrix(PsiB);
+  SigmaW <- crossprod(LambdaW) + diag_matrix(PsiW);
+  SigmaB <- crossprod(LambdaB) + diag_matrix(PsiB);
 
   /** brownian **/
   
@@ -118,7 +113,7 @@ generated quantities {
   cov_matrix[k] SigmaW;
   cov_matrix[k] SigmaB;
   
-  SigmaW <- tcrossprod(LambdaW) + diag_matrix(PsiW);
-  SigmaB <- tcrossprod(LambdaB) + diag_matrix(PsiB);
+  SigmaW <- crossprod(LambdaW) + diag_matrix(PsiW);
+  SigmaB <- crossprod(LambdaB) + diag_matrix(PsiB);
 
 }
