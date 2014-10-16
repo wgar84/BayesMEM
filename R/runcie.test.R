@@ -59,6 +59,7 @@ runcie.test <- alply (1:4, 1, function (i)
                            pars = c('terminal', 'ancestor', 'root',
                              'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB'),
                            warmup = 500, iter = 1000, thin = 5, chains = 1,
-                           control = list ('chain_id' = i)))
+                           control = list ('chain_id' = i)),
+                      .parallel = TRUE)
 
 save (runcie.test, file = 'testRuncie.RData')
