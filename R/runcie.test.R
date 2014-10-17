@@ -42,7 +42,7 @@ runcie.data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 6
+            n_fac <- 4
             ### runcie decomposition
             a1W <- 4; b1W <- 2 # shrinkageW
             a2W <- 3; b2W <- 2
@@ -58,8 +58,9 @@ fail.runcie <-
   failwith(NULL, function (i)
            stan('../Stan/oneSigma_Anc_runcie.stan', data = runcie.data,
                 pars = c('terminal', 'ancestor', 'root',
-                  'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB'),
-              warmup = 500, iter = 1000, thin = 5, chains = 1,
+                  'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB',
+                  'deltaW', 'deltaB', 'phiW', 'phiB'),
+              warmup = 1000, iter = 2000, thin = 10, chains = 1,
                 control = list ('chain_id' = i)))
 
 runcie.test <- alply (1:4, 1, fail.runcie, .parallel = TRUE)
@@ -67,3 +68,4 @@ runcie.test <- alply (1:4, 1, fail.runcie, .parallel = TRUE)
 save (runcie.test, file = 'testRuncie.RData')
 
 rm (list = ls())
+
