@@ -106,7 +106,8 @@ DiagGelman <- function (extract.list, parallel = TRUE)
                     theme_minimal() +
                       xlab('Parameter') +
                         ylab (expression (frac (sigma[w], sigma[t]))) +
-                          scale_colour_discrete(name = 'Parameter')
+                          scale_colour_discrete(name = 'Parameter') +
+                            theme(axis.text.x = element_text(angle = 90))
 
 
                 ### LP

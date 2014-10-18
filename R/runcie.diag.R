@@ -4,8 +4,8 @@ require (expm)
 require (plyr)
 require (plotrix)
 require (doMC)
-#registerDoMC (cores = 3)
-registerDoMC (cores = 8)
+registerDoMC (cores = 4)
+#registerDoMC (cores = 8)
 #registerDoMC (cores = 60)
 require (reshape2)
 require (ggplot2)
@@ -69,4 +69,45 @@ runciePost $ trace.comp <-
   do.call (arrangeGrob, c(runciePost $ trace, 'ncol' = 3))
 ggsave('runcie.trace.pdf', runciePost $ trace.comp, width = 24, height = 8)
 
-runciePost $ trace $ root
+runciePost $ response <- llply (runciePost $ ext, PostDeltaZ,
+                                tree = runciePost $ subtree,
+                                beta = TRUE)
+
+
+pdf(file = 'runcie.beta.pdf', width = 16, height = 8)
+llply(runciePost $ response, DiagBeta, runciePost $ subtree, slice = 'logCS')
+dev.off (dev.cur ())
+
+runciePost $ diagW <-
+  llply (runciePost $ ext, DiagW,
+         vcv.terminal.list = llply (OneDef[27:38],
+           function (L) L $ ml.vcv),
+         sample.size = Aux $ sample.size [27:38], 
+         parallel = FALSE, .parallel = TRUE)
+
+runciePost $ diagW.comp <- do.call(arrangeGrob, c(runciePost $ diagW, ncol = 2, nrow = 2))
+
+### vamos olhar para os lambdas
+
+
+par (mfrow = c(2, 3))
+for(i in 1:6)
+  {
+    for (j in 1:4)
+      {
+        boxplot (runciePost $ ext [[j]] $ LambdaW [, i, ], las = 3, cex.axis = 0.75,
+                 main = i, border = hsv(h = j/4, v = 0.5), add = ifelse (j != 1, T, F))
+      }
+    abline (h = 0, lty = 3)
+  }
+
+par (mfrow = c(2, 3))
+for(i in 1:6)
+  {
+    for (j in 1:4)
+      {
+        boxplot (runciePost $ ext [[j]] $ LambdaB [, i, ], las = 3, cex.axis = 0.75,
+                 main = i, border = hsv(h = j/4, v = 0.5), add = ifelse (j != 1, T, F))
+      }
+    abline (h = 0, lty = 3)
+  }

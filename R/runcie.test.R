@@ -47,9 +47,9 @@ runcie.data <-
             a1W <- 4; b1W <- 2 # shrinkageW
             a2W <- 3; b2W <- 2
             asW <- 2; bsW <- 1
-            a1B <- 40; b1B <- 2 # shrinkageB
-            a2B <- 30; b2B <- 2
-            asB <- 20; bsB <- 1
+            a1B <- 4; b1B <- 2 # shrinkageB
+            a2B <- 3; b2B <- 2
+            asB <- 2; bsB <- 1
             niW <- min(ni); niB <- 22
           })
   

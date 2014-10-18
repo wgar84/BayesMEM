@@ -1,7 +1,7 @@
 DiagW <- function (extraction, vcv.terminal.list, sample.size = NULL, parallel = TRUE, ...)
   {
     require (Morphometrics)
-    W.post <- extraction $ Sigma
+    W.post <- extraction $ SigmaW
     RS.mat <- 
       aaply(W.post, 1, function (A)
             RandomSkewers(vcv.terminal.list, A, ...) $ correlation,
