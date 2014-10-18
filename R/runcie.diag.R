@@ -66,8 +66,8 @@ runciePost $ combine.ext <-
 runciePost $ trace <-
   DiagTrace (runciePost $ combine.ext)
 runciePost $ trace.comp <-
-  do.call (arrangeGrob, c(runciePost $ trace, 'ncol' = 3))
-ggsave('runcie.trace.pdf', runciePost $ trace.comp, width = 24, height = 8)
+  do.call (arrangeGrob, c(runciePost $ trace, 'nrow' = 3))
+ggsave('runcie.trace.pdf', runciePost $ trace.comp, width = 24, height = 24)
 
 runciePost $ response <- llply (runciePost $ ext, PostDeltaZ,
                                 tree = runciePost $ subtree,
@@ -89,9 +89,8 @@ runciePost $ diagW.comp <- do.call(arrangeGrob, c(runciePost $ diagW, ncol = 2, 
 
 ### vamos olhar para os lambdas
 
-
-par (mfrow = c(2, 3))
-for(i in 1:6)
+par (mfrow = c(2, 2))
+for(i in 1:4)
   {
     for (j in 1:4)
       {
@@ -101,8 +100,8 @@ for(i in 1:6)
     abline (h = 0, lty = 3)
   }
 
-par (mfrow = c(2, 3))
-for(i in 1:6)
+par (mfrow = c(2, 2))
+for(i in 1:4)
   {
     for (j in 1:4)
       {
@@ -112,3 +111,16 @@ for(i in 1:6)
     abline (h = 0, lty = 3)
   }
 
+par (mfrow = c(2, 2))
+for(i in 1:4)
+  {
+    boxplot (runciePost $ ext [[i]] $ PsiW, las = 3, cex.axis = 0.75,
+             main = i, border = hsv(h = j/4, v = 0.7))
+  }
+
+par (mfrow = c(2, 2))
+for(i in 1:4)
+  {
+    boxplot (runciePost $ ext [[i]] $ PsiB, las = 3, cex.axis = 0.75,
+             main = i, border = hsv(h = j/4, v = 0.7))
+  }

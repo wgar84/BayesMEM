@@ -42,15 +42,15 @@ runcie.data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 4
+            n_fac <- 8
             ### runcie decomposition
             a1W <- 4; b1W <- 2 # shrinkageW
             a2W <- 3; b2W <- 2
             asW <- 2; bsW <- 1
-            a1B <- 4; b1B <- 2 # shrinkageB
+            a1B <- 5; b1B <- 2 # shrinkageB
             a2B <- 3; b2B <- 2
             asB <- 2; bsB <- 1
-            niW <- min(ni); niB <- 22
+            niW <- max(ni); niB <- 11
           })
   
 
