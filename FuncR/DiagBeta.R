@@ -24,7 +24,9 @@ DiagBeta <- function (PostBeta, Tree, slice = 'logCS')
     par(new = TRUE, fig = gridFIG())
     plot.phylo(Tree, type = 'cladogram', label.offset = 0.1,
                direction = 'rightwards', use.edge.length = FALSE, cex = 0.75,
-               edge.width = c(1, 3)[Beta.summary $ zero.out + 1])
+               edge.width = c(1, 3)[Beta.summary $ zero.out + 1],
+               edge.color = ifelse (Beta.summary $ zero.out,
+                 ifelse (Beta.summary $ mean > 0, 'red', 'blue'), 'black'))
     nodelabels(frame = 'none', adj = -1, cex = 0.75)
     popViewport()
 
