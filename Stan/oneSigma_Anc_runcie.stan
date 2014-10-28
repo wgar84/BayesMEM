@@ -98,8 +98,8 @@ model {
 	exbar[i+m] <- to_row_vector (ancestor[i] - root);
     }
  
-  llikB <- - 0.5 * (trace_gen_quad_form(inverse_spd(SigmaW), C, exbar) +
-		    2 * (m - 1) * log_determinant(SigmaW));
+  llikB <- - 0.5 * (trace_gen_quad_form(inverse_spd(SigmaB), C, exbar) +
+		    2 * (m - 1) * log_determinant(SigmaB));
   
   increment_log_prob(llikB);
   

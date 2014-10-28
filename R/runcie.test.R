@@ -53,6 +53,11 @@ runcie.data <-
             niW <- max(ni); niB <- 11
           })
   
+### precio fazer três desses:
+##### um com matriz de covariância vinda da Tree[[5]]
+##### outra com a matriz de correlação vinda da Tree[[1]]
+##### e uma (ou duas) sem ancestrais
+
 
 fail.runcie <-
   failwith(NULL, function (i)

@@ -29,12 +29,12 @@ attach ('../../covTensor/Work/post.vcv.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-load ('testRuncie.RData')
+load ('testRuncie1.RData')
 
 runciePost <- list()
 runciePost $ ext <- llply (runcie.test, extract)
 
-runciePost $ subtree <- extract.clade (Tree [[5]], 138)
+runciePost $ subtree <- extract.clade (Tree [[1]], 138)
 
 runciePost $ ext <-
   llply (runciePost $ ext, nameStanExt,
@@ -86,11 +86,19 @@ runciePost $ diagW <-
          parallel = FALSE, .parallel = TRUE)
 
 runciePost $ diagW.comp <- do.call(arrangeGrob, c(runciePost $ diagW, ncol = 2, nrow = 2))
+ggsave('runcie.W.pdf', runciePost $ diagW.comp, width = 16, height = 16)
+
+runciePost $ quantile <-
+  foreach(i = 1:4) %dopar%
+DiagQuantilePop(138, runciePost $ ext [[i]], OneDef, tree = Tree [[5]])
+runciePost $ quantile.comp <-
+  do.call(arrangeGrob, c(runciePost $ quantile, nrow = 4))
+ggsave('runcie.quantile.pdf', runciePost $ quantile.comp, width = 16, height = 32)
 
 ### vamos olhar para os lambdas
 
-par (mfrow = c(2, 2))
-for(i in 1:4)
+par (mfrow = c(2, 4))
+for(i in 1:8)
   {
     for (j in 1:4)
       {
@@ -100,8 +108,8 @@ for(i in 1:4)
     abline (h = 0, lty = 3)
   }
 
-par (mfrow = c(2, 2))
-for(i in 1:4)
+par (mfrow = c(2, 4))
+for(i in 1:8)
   {
     for (j in 1:4)
       {
@@ -124,3 +132,32 @@ for(i in 1:4)
     boxplot (runciePost $ ext [[i]] $ PsiB, las = 3, cex.axis = 0.75,
              main = i, border = hsv(h = j/4, v = 0.7))
   }
+
+runciePost $ B.ml <- var(laply (OneDef[27:38], function(L) L $ mean))
+
+runciePost $ B.post.recons <- aaply (runciePost $ combine.ext $ terminal, 1, var)
+
+aaply (runciePost $ combine.ext $ SigmaB, 1, KrzCor,
+       cov.y = runciePost $ B.ml, ret.dim = 12)
+
+aaply (runciePost $ B.post.recons, 1, KrzCor,
+       cov.y = runciePost $ B.ml, ret.dim = 12)
+
+
+boxplot (aaply (runciePost $ combine.ext $ SigmaB, 1, function (C) eigen (C) $ values))
+abline (h = 0)
+
+eigen (runciePost $ combine.ext $ SigmaB [18, , ]) $ values
+
+eigen (runciePost $ combine.ext $ SigmaB [18, , ]) $ vectors [, 1]
+
+eigen (runciePost $ combine.ext $ SigmaB [15, , ]) $ values
+eigen (runciePost $ combine.ext $ SigmaB [15, , ]) $ vectors [, 1]
+
+eigen (runciePost $ B.ml) $ values
+eigen (runciePost $ B.post.recons [1, , ]) $ values
+
+
+color2D.matplot (cov2cor (runciePost $ B.post.recons [1, , ]))
+
+color2D.matplot (cov2cor (runciePost $ B.ml))
