@@ -35,7 +35,7 @@ runcie.data <-
           {
             k <- 39
             m <- 12 
-            C <- solve(cov2cor (vcvPhylo(runcie.aux $ subtree)))
+            C <- solve (cov2cor (vcvPhylo(runcie.aux $ subtree)))
             ni <- laply (OneDef [runcie.aux $ subtree $ tip.label],
                          function (L) nrow (L $ local))
             ni_max <- max(ni)
@@ -45,10 +45,10 @@ runcie.data <-
             n_fac <- 8
             ### runcie decomposition
             a1W <- 5; b1W <- 2 # shrinkageW
-            a2W <- 4; b2W <- 2
+            a2W <- 3; b2W <- 2
             asW <- 2; bsW <- 1
             a1B <- 5; b1B <- 2 # shrinkageB
-            a2B <- 4; b2B <- 2
+            a2B <- 3; b2B <- 2
             asB <- 2; bsB <- 1
             niW <- max(ni); niB <- 11
           })

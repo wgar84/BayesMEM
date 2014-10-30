@@ -29,9 +29,9 @@ attach ('../../covTensor/Work/post.vcv.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-load ('testRuncieCov5.RData')
+load ('testRuncieDrift.RData')
 
-folder <- 'RuncieCov5/'
+folder <- 'RuncieDrift/'
 
 runciePost <- list()
 runciePost $ ext <- llply (runcie.test, extract)
@@ -62,9 +62,9 @@ runciePost $ combine.ext <-
 runciePost $ gelman.plot <- DiagGelman(runciePost $ ext)
 
 runciePost $ gelman.plot.comp <-
-  do.call (arrangeGrob, c(runciePost$gelman.plot, 'ncol' = 3))
+  do.call (arrangeGrob, c(runciePost$gelman.plot, 'nrow' = 3))
 ggsave(paste (folder, 'runcie.gelman.pdf', sep = ''),
-       runciePost $ gelman.plot.comp, width = 24, height = 8)
+       runciePost $ gelman.plot.comp, width = 8, height = 24)
               
 
 runciePost $ trace <-
@@ -84,6 +84,11 @@ runciePost $ combine.response <-
 pdf(file = paste (folder, 'runcie.beta.pdf', sep = ''), width = 16, height = 8)
 llply(runciePost $ response, DiagBeta, runciePost $ subtree, slice = 'logCS')
 dev.off (dev.cur ())
+
+pdf(file = paste (folder, 'combine.beta.pdf', sep = ''), width = 16, height = 8)
+DiagBeta(runciePost $ combine.response, runciePost $ subtree, 'logCS')
+dev.off (dev.cur ())
+
 
 runciePost $ diagW <-
   llply (runciePost $ ext, DiagW,
@@ -110,12 +115,6 @@ runciePost $ Drift.comp <-
 ggsave(paste (folder, 'drift.pdf', sep = ''),
        runciePost $ Drift.comp, width = 36, height = 12)
 
-runciePost $ Drift.mat <- DiagDrift (runciePost $ combine.ext, mode = 'matrix')
-runciePost $ Drift.mat.comp <-
-  do.call(arrangeGrob, c(runciePost $ Drift.mat, ncol = 3))
-ggsave(paste (folder, 'drift.mat.pdf', sep = ''),
-       runciePost $ Drift.mat.comp, width = 36, height = 12)
-
 ### vamos olhar para os lambdas
 
 runciePost $ LambdaW.df <- melt (llply (runciePost $ ext, function (L) L $ LambdaW))
@@ -130,19 +129,10 @@ runciePost $ LambdaW.plot <-
 ggsave(paste (folder, 'LambdaW.pdf', sep = ''),
        runciePost $ LambdaW.plot, width = 24, height = 48)
 
-runciePost $ LambdaB.df <- melt (llply (runciePost $ ext, function (L) L $ LambdaB))
-
-runciePost $ LambdaB.plot <- 
-  ggplot (runciePost $ LambdaB.df) +
-  geom_violin(aes (x = interaction (trait, L1), y = value, color = L1),
-              alpha = 0.5, scale = 'width') +
-  facet_wrap(~ Var2, scales = 'free', ncol = 1) +
-  scale_x_discrete (breaks = NULL) + theme_minimal()
-
-ggsave(paste (folder, 'LambdaB.pdf', sep = ''),
-       runciePost $ LambdaB.plot, width = 24, height = 48)
-
 save(runciePost, file = paste (folder, 'post.RData', sep = ''))
 
 ### escrever DiagEvol
+
+mean (runciePost $ combine.ext $ lp__) +
+   0.5 * var (runciePost $ combine.ext $ lp__)
 
