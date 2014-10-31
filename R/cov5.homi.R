@@ -41,7 +41,7 @@ runcie.data <-
             ni_max <- max(ni)
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
-              X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
+              X[i, 1:ni[i], ] <- OneDef[[i+40]] $ local
             n_fac <- 6
             ### runcie decomposition
             a1W <- 3; b1W <- 2 # shrinkageW

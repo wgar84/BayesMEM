@@ -148,60 +148,61 @@ save(runciePost, file = paste (folder, 'post.RData', sep = ''))
 
 ### escrever DiagEvol
 
-load (paste (folder, 'post.RData', sep = ''))
+## load (paste (folder, 'post.RData', sep = ''))
 
-Norm.hyp <- t (aaply (Aux $ def.hyp [, 1:6], 2, Normalize))
+## Norm.hyp <- t (aaply (Aux $ def.hyp [, 1:6], 2, Normalize))
 
-runciePost $ combine.evol.W <- 
-  aaply (runciePost $ combine.ext $ SigmaW, 1,
-         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+## Norm.hyp <- cbind(c(1, rep (0, 38)), Norm.hyp)
+## colnames(Norm.hyp) [1] <- 'Size'
 
-runciePost $ combine.evol.B <- 
-  aaply (runciePost $ combine.ext $ SigmaB, 1,
-         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+## runciePost $ combine.evol.W <- 
+##   aaply (runciePost $ combine.ext $ SigmaW, 1,
+##          function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
 
-runciePost $ evol.df <-
-  cbind (melt(runciePost $ combine.evol.B, value.name = 'B'),
-         melt(runciePost $ combine.evol.W, value.name = 'W'))
+## runciePost $ combine.evol.B <- 
+##   aaply (runciePost $ combine.ext $ SigmaB, 1,
+##          function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
 
-runciePost $ evol.df <- runciePost $ evol.df [, -(1:2)]
+## runciePost $ evol.df <-
+##   cbind (melt(runciePost $ combine.evol.B, value.name = 'B'),
+##          melt(runciePost $ combine.evol.W, value.name = 'W'))
 
-runciePost $ evol.hull <- ddply (runciePost $ evol.df, .(Var2), summarize,
-                                 hullW = W [chull(W, B)],
-                                 hullB = B [chull(W, B)])
+## runciePost $ evol.df <- runciePost $ evol.df [, -(1:2)]
 
+## runciePost $ evol.hull <- ddply (runciePost $ evol.df, .(Var2), summarize,
+##                                  hullW = W [chull(W, B)],
+##                                  hullB = B [chull(W, B)])
 
-ggplot (runciePost $ evol.df) +
-  geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
-  scale_x_log10() + scale_y_log10() +
-  geom_polygon(aes(x = hullW, y = hullB, color = Var2, fill = Var2),
-               data = runciePost $ evol.hull, alpha = 0.4) +
-  theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
+## ggplot (runciePost $ evol.df) +
+##   geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
+##   scale_x_log10() + scale_y_log10() +
+##   geom_polygon(aes(x = hullW, y = hullB, color = Var2, fill = Var2),
+##                data = runciePost $ evol.hull, alpha = 0.4) +
+##   theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
 
+## runciePost $ combine.condevol.W <- 
+##   aaply (runciePost $ combine.ext $ SigmaW, 1,
+##          function (C) aaply (Norm.hyp, 2, ConditionalEvolvability, cov.matrix = C))
 
-runciePost $ combine.condevol.W <- 
-  aaply (runciePost $ combine.ext $ SigmaW, 1,
-         function (C) aaply (Norm.hyp, 2, ConditionalEvolvability, cov.matrix = C))
+## runciePost $ combine.condevol.B <- 
+##   aaply (runciePost $ combine.ext $ SigmaB, 1,
+##          function (C) aaply (Norm.hyp, 2, ConditionalEvolvability, cov.matrix = C))
 
-runciePost $ combine.condevol.B <- 
-  aaply (runciePost $ combine.ext $ SigmaB, 1,
-         function (C) aaply (Norm.hyp, 2, ConditionalEvolvability, cov.matrix = C))
+## runciePost $ condevol.df <-
+##   cbind (melt(runciePost $ combine.condevol.B, value.name = 'B'),
+##          melt(runciePost $ combine.condevol.W, value.name = 'W'))
 
-runciePost $ condevol.df <-
-  cbind (melt(runciePost $ combine.condevol.B, value.name = 'B'),
-         melt(runciePost $ combine.condevol.W, value.name = 'W'))
+## runciePost $ condevol.df <- runciePost $ condevol.df [, -(1:2)]
 
-runciePost $ condevol.df <- runciePost $ condevol.df [, -(1:2)]
+## runciePost $ condevol.hull <- ddply (runciePost $ condevol.df, .(Var2), summarize,
+##                                  hullW = W [chull(W, B)],
+##                                  hullB = B [chull(W, B)])
 
-runciePost $ condevol.hull <- ddply (runciePost $ condevol.df, .(Var2), summarize,
-                                 hullW = W [chull(W, B)],
-                                 hullB = B [chull(W, B)])
-
-ggplot (runciePost $ condevol.df) +
-  geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
-  #scale_x_log10() + scale_y_log10() +
-  geom_polygon(aes(x = hullW, y = hullB, color = Var2, fill = Var2),
-               data = runciePost $ condevol.hull, alpha = 0.4) +
-  theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
+## ggplot (runciePost $ condevol.df) +
+##   geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
+##   scale_x_log10() + scale_y_log10() +
+##   geom_polygon(aes(x = hullW, y = hullB, color = Var2, fill = Var2),
+##                data = runciePost $ condevol.hull, alpha = 0.4) +
+##   theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
 
 
