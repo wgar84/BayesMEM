@@ -42,20 +42,14 @@ runcie.data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 8
+            n_fac <- 6
             ### runcie decomposition
             a1W <- 3; b1W <- 2 # shrinkageW
-            a2W <- 3; b2W <- 2
-            asW <- 2; bsW <- 1
+            a2W <- 4; b2W <- 2
+            asW <- 3; bsW <- 2
             niW <- max(ni)
           })
   
-### precio fazer três desses:
-##### um com matriz de covariância vinda da Tree[[5]] ### cov5
-##### outra com a matriz de correlação vinda da Tree[[1]] ### cor1
-##### e uma (ou duas) sem ancestrais
-
-
 fail.runcie <-
   failwith(NULL, function (i)
            stan('../Stan/oneSigma_Anc_runcie_drift.stan', data = runcie.data,

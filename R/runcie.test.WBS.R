@@ -35,21 +35,21 @@ runcie.data <-
           {
             k <- 39
             m <- 12 
-            C <- solve(cov2cor (vcvPhylo(runcie.aux $ subtree)))
+            C <- solve(vcvPhylo(runcie.aux $ subtree))
             ni <- laply (OneDef [runcie.aux $ subtree $ tip.label],
                          function (L) nrow (L $ local))
             ni_max <- max(ni)
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 8
+            n_fac <- 6
             ### runcie decomposition
-            a1W <- 5; b1W <- 2 # shrinkageW
+            a1W <- 3; b1W <- 2 # shrinkageW
             a2W <- 4; b2W <- 2
-            asW <- 2; bsW <- 1
-            a1S <- 5; b1S <- 2 # shrinkageB
+            asW <- 3; bsW <- 2
+            a1S <- 3; b1S <- 2 # shrinkageB
             a2S <- 4; b2S <- 2
-            asS <- 2; bsS <- 1
+            asS <- 3; bsS <- 2
             niW <- max(ni); niS <- 11
           })
   
@@ -58,7 +58,7 @@ fail.runcie <-
            stan('../Stan/oneSigma_Anc_runcie_WBS.stan', data = runcie.data,
                 pars = c('terminal', 'ancestor', 'root',
                   'LambdaW', 'LambdaS', 'PsiW', 'PsiS','SigmaW', 'SigmaB', 'SigmaS',
-                  'deltaW', 'deltaS', 'phiW', 'phiS'),
+                  'deltaW', 'deltaS', 'phiW', 'phiS', 'variance_brownian'),
               warmup = 1000, iter = 2000, thin = 10, chains = 1,
                 control = list ('chain_id' = i)))
 

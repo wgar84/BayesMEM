@@ -106,13 +106,13 @@ ggsave(paste (folder, 'runcie.quantile.pdf', sep = ''),
 
 runciePost $ Drift <- DiagDrift (runciePost $ combine.ext)
 runciePost $ Drift.comp <-
-  do.call(arrangeGrob, c(runciePost $ Drift, ncol = 3))
+  do.call(arrangeGrob, c(runciePost $ Drift, 'nrow' = 3))
 ggsave(paste (folder, 'drift.pdf', sep = ''),
        runciePost $ Drift.comp, width = 36, height = 12)
 
 runciePost $ Drift.mat <- DiagDrift (runciePost $ combine.ext, mode = 'matrix')
 runciePost $ Drift.mat.comp <-
-  do.call(arrangeGrob, c(runciePost $ Drift.mat, ncol = 3))
+  do.call(arrangeGrob, c(runciePost $ Drift.mat, 'nrow' = 3))
 ggsave(paste (folder, 'drift.mat.pdf', sep = ''),
        runciePost $ Drift.mat.comp, width = 36, height = 12)
 
@@ -122,10 +122,11 @@ runciePost $ LambdaW.df <- melt (llply (runciePost $ ext, function (L) L $ Lambd
 
 runciePost $ LambdaW.plot <- 
   ggplot (runciePost $ LambdaW.df) +
-  geom_violin(aes (x = interaction (trait, L1), y = value, color = L1),
+  geom_violin(aes (x = trait, y = value, color = L1),
               alpha = 0.5, scale = 'width') +
   facet_wrap(~ Var2, scales = 'free', ncol = 1) +
-  scale_x_discrete (breaks = NULL) + theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
 
 ggsave(paste (folder, 'LambdaW.pdf', sep = ''),
        runciePost $ LambdaW.plot, width = 24, height = 48)
@@ -134,10 +135,11 @@ runciePost $ LambdaB.df <- melt (llply (runciePost $ ext, function (L) L $ Lambd
 
 runciePost $ LambdaB.plot <- 
   ggplot (runciePost $ LambdaB.df) +
-  geom_violin(aes (x = interaction (trait, L1), y = value, color = L1),
+  geom_violin(aes (x = trait, y = value, color = L1),
               alpha = 0.5, scale = 'width') +
   facet_wrap(~ Var2, scales = 'free', ncol = 1) +
-  scale_x_discrete (breaks = NULL) + theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
 
 ggsave(paste (folder, 'LambdaB.pdf', sep = ''),
        runciePost $ LambdaB.plot, width = 24, height = 48)
@@ -146,3 +148,28 @@ save(runciePost, file = paste (folder, 'post.RData', sep = ''))
 
 ### escrever DiagEvol
 
+Norm.hyp <- t (aaply (Aux $ def.hyp [, 1:6], 2, Normalize))
+
+runciePost $ combine.evol.W <- 
+  aaply (runciePost $ combine.ext $ SigmaW, 1,
+         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+
+runciePost $ combine.evol.B <- 
+  aaply (runciePost $ combine.ext $ SigmaB, 1,
+         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+
+runciePost $ evol.df <-
+  cbind (melt(runciePost $ combine.evol.B, value.name = 'B'),
+         melt(runciePost $ combine.evol.W, value.name = 'W'))
+
+runciePost $ evol.df <- runciePost $ evol.df [, -(1:2)]
+
+ggplot (runciePost $ evol.df) +
+  geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
+  scale_x_log10() + scale_y_log10() +
+  theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
+
+runciePost $ evol.df $ ratio <- runciePost $ evol.df $ B / runciePost $ evol.df $ W
+
+ggplot(runciePost $ evol.df) +
+  geom_violin(aes (y = log(B/W), x = Var2))
