@@ -45,20 +45,14 @@ runcie.data <-
             n_fac <- 6
             ### runcie decomposition
             a1W <- 3; b1W <- 2 # shrinkageW
-            a2W <- 4; b2W <- 2
+            a2W <- 3; b2W <- 2
             asW <- 3; bsW <- 2
             a1B <- 3; b1B <- 2 # shrinkageB
-            a2B <- 4; b2B <- 2
+            a2B <- 3; b2B <- 2
             asB <- 3; bsB <- 2
             niW <- max(ni); niB <- 11
           })
   
-### precio fazer três desses:
-##### um com matriz de covariância vinda da Tree[[5]] ### cov5
-##### outra com a matriz de correlação vinda da Tree[[1]] ### cor1
-##### e uma (ou duas) sem ancestrais
-
-
 fail.runcie <-
   failwith(NULL, function (i)
            stan('../Stan/oneSigma_Anc_runcie.stan', data = runcie.data,

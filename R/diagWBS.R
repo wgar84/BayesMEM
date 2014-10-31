@@ -31,6 +31,7 @@ for (i in 1:length (.source.files))
 
 load ('testRuncieWBS.RData')
 
+system('mkdir RuncieWBS')
 folder <- 'RuncieWBS/'
 
 runciePost <- list()
@@ -127,7 +128,7 @@ runciePost $ LambdaW.plot <-
   ggplot (runciePost $ LambdaW.df) +
   geom_violin(aes (x = trait, y = value, color = L1),
               alpha = 0.5, scale = 'width') +
-  facet_wrap(~ Var2, scales = 'free', ncol = 1) +
+  facet_wrap(~ factor, scales = 'free', ncol = 1) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90))
 
@@ -140,7 +141,7 @@ runciePost $ LambdaS.plot <-
   ggplot (runciePost $ LambdaS.df) +
   geom_violin(aes (x = trait, y = value, color = L1),
               alpha = 0.5, scale = 'width') +
-  facet_wrap(~ Var2, scales = 'free', ncol = 1) +
+  facet_wrap(~ factor, scales = 'free', ncol = 1) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90))
 
