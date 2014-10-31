@@ -148,37 +148,98 @@ save(runciePost, file = paste (folder, 'post.RData', sep = ''))
 
 ### escrever DiagEvol
 
-## load (paste (folder, 'post.RData', sep = ''))
+## runciePost $ psiW.df <- melt (runciePost $ combine.ext $ PsiW, value.name = 'W')
+## runciePost $ psiB.df <- melt (runciePost $ combine.ext $ PsiB, value.name = 'B')
 
-## Norm.hyp <- t (aaply (Aux $ def.hyp [, 1:6], 2, Normalize))
+## runciePost $ psi.df <- cbind (runciePost $ psiW.df,
+##                               runciePost $ psiB.df)
 
-## Norm.hyp <- cbind(c(1, rep (0, 38)), Norm.hyp)
-## colnames(Norm.hyp) [1] <- 'Size'
+## runciePost $ psi.df <- runciePost $ psi.df[, -(1:2)]
 
-## runciePost $ combine.evol.W <- 
-##   aaply (runciePost $ combine.ext $ SigmaW, 1,
-##          function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+## runciePost $ psibar.df <-
+##   ddply (runciePost $ psi.df, .(trait), summarize, W = mean(W), B = mean(B))
 
-## runciePost $ combine.evol.B <- 
-##   aaply (runciePost $ combine.ext $ SigmaB, 1,
-##          function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+## summary (lm (log(B) ~ log(W), data = runciePost $ psibar.df))
 
-## runciePost $ evol.df <-
-##   cbind (melt(runciePost $ combine.evol.B, value.name = 'B'),
-##          melt(runciePost $ combine.evol.W, value.name = 'W'))
-
-## runciePost $ evol.df <- runciePost $ evol.df [, -(1:2)]
-
-## runciePost $ evol.hull <- ddply (runciePost $ evol.df, .(Var2), summarize,
-##                                  hullW = W [chull(W, B)],
-##                                  hullB = B [chull(W, B)])
-
-## ggplot (runciePost $ evol.df) +
-##   geom_point (aes (x = W, y = B, color = Var2), alpha = 1, size = 5, shape = '+') +
+## ggplot (runciePost $ psibar.df) +
+##   geom_text (aes (x = W, y = B, label = trait), alpha = 1, size = 5, shape = '+') +
 ##   scale_x_log10() + scale_y_log10() +
-##   geom_polygon(aes(x = hullW, y = hullB, color = Var2, fill = Var2),
-##                data = runciePost $ evol.hull, alpha = 0.4) +
+##   ## geom_polygon(aes(x = hullW, y = hullB, color = trait, fill = trait),
+##   ##              data = runciePost $ psi.hull, alpha = 0.4) +
 ##   theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
+
+load (paste (folder, 'post.RData', sep = ''))
+
+Norm.hyp <- t (aaply (Aux $ def.hyp [, 1:6], 2, Normalize))
+
+### Size (easy)
+Norm.hyp <- cbind(c(1, rep (0, 38)), Norm.hyp)
+colnames(Norm.hyp) [1] <- 'Size'
+
+runciePost $ combine.evol.W <- 
+  aaply (runciePost $ combine.ext $ SigmaW, 1,
+         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+
+runciePost $ combine.evol.B <- 
+  aaply (runciePost $ combine.ext $ SigmaB, 1,
+         function (C) aaply (Norm.hyp, 2, Evolvability, cov.matrix = C))
+
+runciePost $ evol.df <-
+  data.frame (melt(runciePost $ combine.evol.B, value.name = 'B'),
+              melt(runciePost $ combine.evol.W, value.name = 'W'))
+
+runciePost $ evol.df <- runciePost $ evol.df [, -(1:2)] [, c(2, 3, 1, 4)]
+
+colnames (runciePost $ evol.df) <- c('iterations', 'comb', 'B', 'W')
+
+
+### Allometry
+runciePost $ alloW.slope <- aaply (runciePost $ combine.ext $ SigmaW, 1,
+                                  function (C) Normalize (C [, 1] / C[1, 1])
+                                  )
+runciePost $ allo.evol <-
+  adply (1:400, 1, function (i)
+         Evolvability(runciePost $ alloW.slope [i, ],
+                      runciePost $ combine.ext $ SigmaW [i, , ]))
+runciePost $ allo.evol.B <-
+  adply (1:400, 1, function (i)
+         Evolvability(runciePost $ alloW.slope [i, ],
+                      runciePost $ combine.ext $ SigmaB [i, , ]))
+runciePost $ allo.evol.df <-
+  data.frame(1:400,
+    rep('Allo', 400),  
+    runciePost $ allo.evol.B [2],
+    runciePost $ allo.evol [2],
+    stringsAsFactors=FALSE)
+colnames (runciePost $ allo.evol.df) <- c('iterations', 'comb', 'B', 'W')
+
+### PC1
+
+runciePost $ evol.PC1.df <- 
+  data.frame (1:400,
+              rep('PC1', 400),
+              aaply (1:400, 1,
+                     function (i)
+                     c(Evolvability (eigen (runciePost $ combine.ext $ SigmaW [i, , ]) $
+                                     vectors [, 1],
+                                     runciePost $ combine.ext $ SigmaB [i, , ]),
+                       eigen (runciePost $ combine.ext $ SigmaW [i, , ]) $ values [1])))
+
+colnames (runciePost $ evol.PC1.df) <- c('iterations', 'comb', 'B', 'W')
+
+runciePost $ evol.df <- rbind(runciePost $ evol.df, runciePost $ allo.evol.df,
+                              runciePost $ evol.PC1.df)
+
+runciePost $ evol.hull <- ddply (runciePost $ evol.df, .(comb), summarize,
+                                 hullW = W [chull(W, B)],
+                                 hullB = B [chull(W, B)])
+
+ggplot (runciePost $ evol.df) +
+  geom_point (aes (x = W, y = B, color = comb), alpha = 1, size = 5, shape = '+') +
+  scale_x_log10() + scale_y_log10() +
+  geom_polygon(aes(x = hullW, y = hullB, color = comb, fill = comb),
+               data = runciePost $ evol.hull, alpha = 0.4) +
+  theme_minimal() + geom_smooth(aes(x = W, y = B), formula = y ~ x, method = 'lm')
 
 ## runciePost $ combine.condevol.W <- 
 ##   aaply (runciePost $ combine.ext $ SigmaW, 1,
