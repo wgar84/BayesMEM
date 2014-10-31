@@ -61,7 +61,7 @@ fail.runcie <-
 
 runcie.test <- alply (1:4, 1, fail.runcie, .parallel = TRUE)
 
-save (runcie.test, file = 'testRuncieDrift.RData')
+save (runcie.test, file = 'driftComp.RData')
 
 rm (list = ls())
 

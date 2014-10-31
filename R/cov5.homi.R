@@ -70,7 +70,7 @@ fail.runcie <-
 
 runcie.test <- alply (1:4, 1, fail.runcie, .parallel = TRUE)
 
-save (runcie.test, file = 'testRuncieCov5.RData')
+save (runcie.test, file = 'cov5Homi.RData')
 
 rm (list = ls())
 
