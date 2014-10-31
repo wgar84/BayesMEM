@@ -44,9 +44,9 @@ runcie.data <-
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
             n_fac <- 4
             ### runcie decomposition
-            a1W <- 5; b1W <- 2 # shrinkageW
-            a2W <- 3; b2W <- 2
-            asW <- 3; bsW <- 2
+            a1W <- 2; b1W <- 1 # shrinkageW
+            a2W <- 3; b2W <- 1
+            asW <- 3; bsW <- 1
             niW <- max(ni)
           })
   
