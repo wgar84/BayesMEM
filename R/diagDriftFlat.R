@@ -41,7 +41,8 @@ folder <- 'DriftFlat/'
 post <- list()
 post $ ext <- llply (fit, extract)
 
-subtree <- extract.clade (Tree [[5]], 138)
+data $ node <- 138
+data $ subtree <- extract.clade (Tree [[5]], data $ node)
 
 post <-
   within(post,
@@ -50,10 +51,18 @@ post <-
            ext <-
              llply (ext, nameStanExt,
                     names.list = list ('trait' = colnames (OneDef [[1]] $ local),
-                      'node' = subtree $ tip.label,
+                      'node' = data $ subtree $ tip.label,
                       'node' = as.character ((data $ m) + 2:(data $ m - 1)),
                       'factor' = paste ('lambda', 1:data $ n_fac, sep = ''),
                       'iterations' = length (ext [[1]] $ lp__)))
+           ## ext <-
+           ##   llply (ext, function (L)
+           ##          {
+           ##            dimnames (L $ ancestor) [[2]] <-
+           ##              as.character ((data $ m) + 2:(data $ m - 1))
+           ##            names (dimnames (L $ ancestor)) [2] <- 'node'
+           ##            L
+           ##          })
                     
            combine.fit <- sflist2stanfit(fit)
 
@@ -62,11 +71,14 @@ post <-
            combine.ext <-
              nameStanExt (combine.ext, 
                           names.list = list ('trait' = colnames (OneDef [[1]] $ local),
-                            'node' = subtree $ tip.label,
+                            'node' = data $ subtree $ tip.label,
                             'node' = as.character ((data $ m) + 2:(data $ m - 1)),
                             'factor' = paste ('lambda', 1:data $ n_fac, sep = ''),
                             'iterations' = length (post $ combine.ext $ lp__)))
 
+           ## names (dimnames (combine.ext $ ancestor)) [2] <- 'node'
+           ## dimnames (combine.ext $ ancestor) [[2]] <-
+           ##   as.character ((data $ m) + 2:(data $ m - 1))
          })
 
 
@@ -89,24 +101,24 @@ post <-
                   trace.comp, width = 24, height = 24)
 
            ### BETA
-           response <- llply (ext, PostDeltaZ, tree = subtree, beta = TRUE)
-           combine.response <- PostDeltaZ(combine.ext, subtree, TRUE)
+           response <- llply (ext, PostDeltaZ, tree = data $ subtree, beta = TRUE)
+           combine.response <- PostDeltaZ(combine.ext, data $ subtree, TRUE)
 
            pdf(file = paste (folder, 'beta.pdf', sep = ''),
                width = 16, height = 8)
-           llply(response, DiagBeta, subtree, slice = 'logCS')
+           llply(response, DiagBeta, data $ subtree, slice = 'logCS')
            dev.off (dev.cur ())
 
            pdf(file = paste (folder, 'combine.beta.pdf', sep = ''),
                width = 16, height = 8)
-           DiagBeta(combine.response, subtree, 'logCS')
+           DiagBeta(combine.response, data $ subtree, 'logCS')
            dev.off (dev.cur ())
 
            ### W
            diagW <- llply (ext, DiagW,
-                           vcv.terminal.list = llply (OneDef[27:38],
+                           vcv.terminal.list = llply (OneDef[data $ subtree $ tip.label],
                              function (L) L $ ml.vcv),
-                           sample.size = Aux $ sample.size [27:38], 
+                           sample.size = Aux $ sample.size [data $ subtree $ tip.label], 
                            parallel = FALSE, .parallel = TRUE)
 
            diagW.comp <- do.call(arrangeGrob, c(diagW, ncol = 2, nrow = 2))
@@ -115,9 +127,9 @@ post <-
 
            ### QUANTILE
            quantile <- foreach(i = 1:4) %dopar%
-           DiagQuantilePop(138, ext [[i]], OneDef, tree = Tree [[5]])
+           DiagQuantilePop(data $ node, ext [[i]], OneDef, tree = Tree [[5]])
            quantile.comp <- do.call(arrangeGrob, c(quantile, nrow = 4))
-           ggsave(paste (folder, 'runcie.quantile.pdf', sep = ''),
+           ggsave(paste (folder, 'quantile.pdf', sep = ''),
                   quantile.comp, width = 16, height = 32)
 
            ### DRIFT
@@ -147,3 +159,23 @@ save(post, file = paste (folder, 'post.RData', sep = ''))
 rm (list = ls())
 
 ### escrever DiagEvol
+alpha = 5
+beta = 2
+alpha2 = 10
+beta2 = 5
+boxplot (cbind (
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta))), 
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(1, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(2, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(3, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(4, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(5, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(6, shape = alpha2, rate = beta2))),
+  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
+                      rgamma(7, shape = alpha2, rate = beta2)))))

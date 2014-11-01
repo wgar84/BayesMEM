@@ -24,7 +24,8 @@ attach ('../../covTensor/Work/post.vcv.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-subtree <- extract.clade (Tree [[5]], 138)
+node <- 138
+subtree <- extract.clade (Tree [[5]], node)
 
 data <- list ()
 data <-
@@ -39,11 +40,11 @@ data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 10
+            n_fac <- 6
             ###  decomposition
-            a1W <- 10; b1W <- 2 # shrinkageW
+            a1W <- 5; b1W <- 2 # shrinkageW
             a2W <- 10; b2W <- 5
-            asW <- 10; bsW <- 2
+            asW <- 5; bsW <- 2
             niW <- max(ni)
           })
   
@@ -58,7 +59,9 @@ fail.model <-
 
 fit <- alply (1:4, 1, fail.model, .parallel = TRUE)
 
+data $ subtree <- subtree
+data $ node <- node
+
 save (data, fit, file = 'driftFlat.RData')
 
 rm (list = ls())
-
