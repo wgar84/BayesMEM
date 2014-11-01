@@ -1,2 +1,4 @@
 ### templates from Emacs
 *~
+*.pdf
+*.RData
