@@ -69,6 +69,8 @@ post <-
 
          })
 
+
+
 ### DIAGNOSTICS
 post <-
   within(post,
@@ -121,9 +123,9 @@ post <-
            ### DRIFT
            drift <- DiagDrift (combine.ext)
            drift.comp <-
-             do.call(arrangeGrob, c(drift, ncol = 3))
+             do.call(arrangeGrob, c(drift, ncol = 2, nrow = 2))
            ggsave(paste (folder, 'drift.pdf', sep = ''),
-                  drift.comp, width = 36, height = 12)
+                  drift.comp, width = 24, height = 24)
 
            ### LAMBDA
            LambdaW.df <- melt (llply (ext, function (L) L $ LambdaW))

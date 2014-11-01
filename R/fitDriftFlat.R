@@ -39,7 +39,7 @@ data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 4
+            n_fac <- 10
             ###  decomposition
             a1W <- 10; b1W <- 2 # shrinkageW
             a2W <- 10; b2W <- 5
@@ -62,26 +62,3 @@ save (data, fit, file = 'driftFlat.RData')
 
 rm (list = ls())
 
-
-alpha = 10
-beta = 2
-alpha2 = 10
-beta2 = 5
-boxplot (cbind (
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta))), 
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(1, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(2, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(3, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(4, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(5, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(6, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(7, shape = alpha2, rate = beta2)))))
-
-  

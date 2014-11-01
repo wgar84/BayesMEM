@@ -20,10 +20,13 @@ singleDrift <- function (W.mat, terminal)
     ### variance
     var.B.on.W <- aaply (B.on.W, 2, var)
     reg.test <- lm (log (var.B.on.W) ~ log (var.W))
+    var.df <- data.frame (1:length (var.W), log (var.B.on.W), log (var.W))
+    names (var.df) <- c('PC', 'B', 'W')
     ### correlation
     cor.B.on.W <- cor (B.on.W)
     cor.test <- cortest.bartlett (cor.B.on.W, n = m)
-    return (list ('reg' = reg.test, 'cor' = cor.test, 'mat' = cor.B.on.W))
+    return (list ('reg' = reg.test, 'cor' = cor.test, 'mat' = cor.B.on.W,
+                  'var.df' = var.df))
   }
 
 matrixDrift <- function (W.mat, B.mat, n.term)
@@ -46,10 +49,13 @@ matrixDrift <- function (W.mat, B.mat, n.term)
     ### variance
     var.B.on.W <- diag (B.on.W)
     reg.test <- lm (log (var.B.on.W) ~ log (var.W))
+    var.df <- data.frame (1:length (var.W), log (var.B.on.W), log (var.W))
+    names (var.df) <- c('PC', 'B', 'W')
     ### correlation
     cor.B.on.W <- cov2cor (B.on.W)
     cor.test <- cortest.bartlett (cor.B.on.W, n = m)
-    return (list ('reg' = reg.test, 'cor' = cor.test, 'mat' = cor.B.on.W))
+    return (list ('reg' = reg.test, 'cor' = cor.test, 'mat' = cor.B.on.W,
+                  'var.df' = var.df))
   }
 
 DiagDrift <- function (extraction, mode = 'terminal')
@@ -72,23 +78,46 @@ DiagDrift <- function (extraction, mode = 'terminal')
                ds.model
              })
     regcor.ens <-
-      ldply (results.ensemble, function (L) c (coef (L $ reg) [2], L $ cor $ chisq))
+      ldply (results.ensemble, function (L) c (coef (L $ reg), L $ cor $ chisq))
     mat.ens <-
       laply (results.ensemble, function (L)
              abs (fisherTrans (L $ mat [lower.tri (L $ mat)])))
+    var.df <- ldply (results.ensemble, function (L) L $ var.df)
+    colnames (var.df) [1] <- 'iterations'
     s <- which (lower.tri(diag(ncor)), arr.ind = TRUE) [, 2:1]
     names.cor <- paste (s [, 1], s[, 2], sep = '-')
     colnames (mat.ens) <- names.cor
     names (dimnames (mat.ens)) <- c('Iteration', 'Correlation')
     mat.df <- melt (mat.ens)
-    colnames (regcor.ens) <- c ('Iteration', 'Regression', 'Correlation')
+    colnames (regcor.ens) <- c ('Iteration', 'Intercept', 'Slope',
+                                'Correlation')
 
+    var.df.mean <- ddply (var.df, .(PC), summarize,
+                          meanW = mean (W),
+                          meanB = mean (B))
+    var.df.hull <- ddply (var.df, .(PC), summarize,
+                          hullW = W [chull(W, B)],
+                          hullB = B [chull(W, B)])
+    
     chisq.crit.value <- qchisq(0.95, df.bartlett)
     
     Plots <- list()
 
+    Plots $ BvsW <- ggplot (var.df.mean) +
+      geom_text(aes (x = meanW, y = meanB, label = PC), size = 3, alpha = 1) +
+        theme_minimal() +
+          geom_polygon(aes (x = hullW, y = hullB, group = PC),
+                       data = var.df.hull, alpha = 0.1) +
+                         xlab(expression (paste ('log ',lambda[W]))) +
+                           ylab(expression (paste ('log ',lambda[B]))) +
+                             labs (title = 'Eigenvalue Regression')
+    for (i in 1:nrow(regcor.ens))
+      Plots $ BvsW <- Plots $ BvsW +
+        geom_abline(intercept = regcor.ens[i, 'Intercept'],
+                    slope = regcor.ens[i, 'Slope'], alpha = 0.05)
+    
     Plots $ reg <- ggplot (regcor.ens) +
-      geom_histogram(aes(x = Regression), position = 'identity') +
+      geom_histogram(aes(x = Slope), position = 'identity') +
         theme_minimal() + geom_vline (xintercept = 1) +
           labs (title = 'Regression Test') +
             xlab (expression (paste ('Slope ', 'log', lambda[B]) %~%
