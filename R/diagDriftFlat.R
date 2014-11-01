@@ -5,8 +5,6 @@ require (plyr)
 require (plotrix)
 require (doMC)
 registerDoMC (cores = 4)
-#registerDoMC (cores = 8)
-#registerDoMC (cores = 60)
 require (reshape2)
 require (ggplot2)
 require (gridBase)
@@ -35,7 +33,7 @@ for (i in 1:length (.source.files))
 ## rm (Aux)
 ## detach(file:../../Databases/Aux.RData)
 
-load ('fitDriftFlat.RData')
+load ('driftFlat.RData')
 
 system('mkdir DriftFlat')
 folder <- 'DriftFlat/'
@@ -78,13 +76,13 @@ post <-
            ### GELMAN
            gelman.plot <- DiagGelman(ext)
            gelman.plot.comp <-
-             do.call (arrangeGrob, c(gelman.plot, 'nrow' = 3))
+             do.call(arrangeGrob, c(gelman.plot, 'nrow' = 3))
            ggsave(paste (folder, 'gelman.pdf', sep = ''),
                   gelman.plot.comp, width = 8, height = 24)
               
            ### TRACE
            trace <- DiagTrace (combine.ext)
-           post $ trace.comp <- do.call (arrangeGrob, c(trace, 'nrow' = 3))
+           trace.comp <- do.call (arrangeGrob, c(trace, 'nrow' = 3))
            ggsave(paste (folder, 'trace.pdf', sep = ''),
                   trace.comp, width = 24, height = 24)
 
