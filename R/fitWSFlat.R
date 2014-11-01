@@ -61,7 +61,7 @@ fail.model <-
 
 fit <- alply (1:4, 1, fail.model, .parallel = TRUE)
 
-save (data, fit, file = 'vanillaFlat.RData')
+save (data, fit, file = 'wsFlat.RData')
 
 rm (list = ls())
 
