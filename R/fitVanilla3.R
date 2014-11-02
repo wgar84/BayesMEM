@@ -57,7 +57,7 @@ fail.model <-
            stan('../Stan/oneSigma_Anc_runcie_drift.stan', data = data,
                 pars = c('terminal', 'ancestor', 'root',
                   'LambdaW', 'LambdaB', 'PsiW','SigmaW', 'SigmaB',
-                  'deltaW', 'phiW', 'deltaB', 'phiB')
+                  'deltaW', 'phiW', 'deltaB', 'phiB'),
                 warmup = 1000, iter = 2000, thin = 10, chains = 1,
                 control = list ('chain_id' = i)))
 
