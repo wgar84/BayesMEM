@@ -40,7 +40,7 @@ data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 6
+            n_fac <- 8
             ###  decomposition
             a1W <- 20; b1W <- 10 # shrinkageW
             a2W <- 20; b2W <- 15
@@ -70,7 +70,7 @@ rm (list = ls())
 ## alpha = 20
 ## beta = 10
 ## alpha2 = 20
-## beta2 = 10
+## beta2 = 15
 ## boxplot (cbind (
 ##   raply (1000, rnorm(1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
 ##                                    rgamma(1, shape = alpha, rate = beta)))), 
@@ -91,4 +91,7 @@ rm (list = ls())
 ##                                     rgamma(5, shape = alpha2, rate = beta2)))),
 ##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
 ##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(6, shape = alpha2, rate = beta2))))))
+##                                     rgamma(6, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(7, shape = alpha2, rate = beta2))))))
