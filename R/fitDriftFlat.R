@@ -40,7 +40,7 @@ data <-
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 8
+            n_fac <- 3
             ###  decomposition
             a1W <- 20; b1W <- 10 # shrinkageW
             a2W <- 20; b2W <- 15
@@ -65,33 +65,3 @@ data $ node <- node
 save (data, fit, file = 'driftFlat.RData')
 
 rm (list = ls())
-  
-## ni = 21
-## alpha = 20
-## beta = 10
-## alpha2 = 20
-## beta2 = 15
-## boxplot (cbind (
-##   raply (1000, rnorm(1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                    rgamma(1, shape = alpha, rate = beta)))), 
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(1, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(2, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(3, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(4, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(5, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(6, shape = alpha2, rate = beta2)))),
-##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
-##                                     rgamma(1, shape = alpha, rate = beta),
-##                                     rgamma(7, shape = alpha2, rate = beta2))))))
