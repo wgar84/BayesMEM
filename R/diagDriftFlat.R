@@ -83,6 +83,7 @@ post <-
 
 
 
+
 ### DIAGNOSTICS
 post <-
   within(post,
@@ -138,16 +139,21 @@ post <-
              do.call(arrangeGrob, c(drift, ncol = 2, nrow = 2))
            ggsave(paste (folder, 'drift.pdf', sep = ''),
                   drift.comp, width = 24, height = 24)
+         })
 
+post <-
+  within(post,
+         {
            ### LAMBDA
            LambdaW.df <- melt (llply (ext, function (L) L $ LambdaW))
 
            LambdaW.plot <- 
              ggplot (LambdaW.df) +
-               geom_violin(aes (x = trait, y = value, color = L1),
+               geom_violin(aes (y = value, x = L1, color = L1, fill = L1),
                            alpha = 0.5, scale = 'width') +
-                             facet_wrap(~ factor, scales = 'free', ncol = 1) +
-                               theme_minimal() +
+                             scale_x_discrete(breaks = NULL) +
+                             facet_grid(factor ~ trait, scales = 'free') +
+                               theme_bw() +
                                  theme(axis.text.x = element_text(angle = 90))
 
            ggsave(paste (folder, 'LambdaW.pdf', sep = ''),
@@ -159,23 +165,3 @@ save(post, file = paste (folder, 'post.RData', sep = ''))
 rm (list = ls())
 
 ### escrever DiagEvol
-alpha = 5
-beta = 2
-alpha2 = 10
-beta2 = 5
-boxplot (cbind (
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta))), 
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(1, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(2, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(3, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(4, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(5, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(6, shape = alpha2, rate = beta2))),
-  1/raply (1000, prod (rgamma(1, shape = alpha, rate = beta),
-                      rgamma(7, shape = alpha2, rate = beta2)))))

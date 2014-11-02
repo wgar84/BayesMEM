@@ -42,10 +42,10 @@ data <-
               X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
             n_fac <- 6
             ###  decomposition
-            a1W <- 5; b1W <- 2 # shrinkageW
-            a2W <- 10; b2W <- 5
-            asW <- 5; bsW <- 2
-            niW <- max(ni)
+            a1W <- 20; b1W <- 10 # shrinkageW
+            a2W <- 20; b2W <- 15
+            asW <- 2; bsW <- 1
+            niW <- min(ni)
           })
   
 fail.model <-
@@ -65,3 +65,30 @@ data $ node <- node
 save (data, fit, file = 'driftFlat.RData')
 
 rm (list = ls())
+  
+## ni = 21
+## alpha = 20
+## beta = 10
+## alpha2 = 20
+## beta2 = 10
+## boxplot (cbind (
+##   raply (1000, rnorm(1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                    rgamma(1, shape = alpha, rate = beta)))), 
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(1, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(2, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(3, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(4, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(5, shape = alpha2, rate = beta2)))),
+##   raply (1000, rnorm (1, 0, 1/prod (rgamma(1, shape = ni/2, rate = ni/2),
+##                                     rgamma(1, shape = alpha, rate = beta),
+##                                     rgamma(6, shape = alpha2, rate = beta2))))))
