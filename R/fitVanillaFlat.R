@@ -1,5 +1,5 @@
 require (ape)
-require (Morphometrics)
+require (evolqg)
 require (expm)
 require (plyr)
 require (plotrix)
@@ -25,10 +25,6 @@ attach('../../Tese/Data/allo.Results.RData')
 for (i in 1:length (.source.files))
   source (.source.files [i])
 
-head (allo.Data $ onedef.df)
-
-subtree <- extract.clade (Tree [[5]], 138)
-
 data <- list ()
 data <-
   within (data,
@@ -53,9 +49,8 @@ fail.model <-
                 warmup = 1000, iter = 2000, thin = 10, chains = 1,
                 control = list ('chain_id' = i)))
 
-fit <- alply (1:3, 1, fail.model, .parallel = TRUE)
+fit <- alply (1:4, 1, fail.model, .parallel = TRUE)
 
 save (data, fit, file = 'vanillaFlat.RData')
 
-rm (list = ls())
 
