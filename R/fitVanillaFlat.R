@@ -32,7 +32,7 @@ data <-
             k <- 4
             m <- 109 
             C <- solve(vcvPhylo(Tree [[5]]))
-            ni <- laply (OneDef, function (L) nrow (L $ local))
+            ni <- Aux $ sample.size
             ni_max <- max(ni)
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
@@ -40,7 +40,9 @@ data <-
                 as.matrix (subset (allo.Data $ onedef.df,
                                    animal == Tree [[1]] $ tip.label [i]) [, 3:6])
           })
-  
+
+data $ ni
+
 fail.model <-
   failwith(NULL, function (i)
            stan('../Stan/oneSigma_Anc.stan', data = data,
