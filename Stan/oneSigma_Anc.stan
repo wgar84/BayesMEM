@@ -5,8 +5,6 @@ data {
   int ni[m]; // amostras
   int ni_max; // máximo amostra
   vector[k] X[m,ni_max]; // dados
-  //vector[k] priorX;
-  //cov_matrix[k] priorS;
 }
 
 transformed data {

@@ -17,12 +17,15 @@ attach ('../../Databases/OneDef/ED.RData')
 attach ('../../Databases/OneDef/OneDef.RData')
 attach ('../../Databases/Tree.RData')
 attach ('../../Databases/Aux.RData')
-#attach ('../../covTensor/Work/post.vcv.RData')
+
+attach('../../Tese/Data/allo.Results.RData')
 
 .source.files <- dir('../FuncR/', pattern = '.R', full.names = TRUE)
 .source.files <- .source.files [!grepl ('~', .source.files)]
 for (i in 1:length (.source.files))
   source (.source.files [i])
+
+head (allo.Data $ onedef.df)
 
 subtree <- extract.clade (Tree [[5]], 138)
 
@@ -30,36 +33,27 @@ data <- list ()
 data <-
   within (data,
           {
-            k <- 39
-            m <- 12 
-            C <- solve(vcvPhylo(subtree))
-            ni <- laply (OneDef [subtree $ tip.label],
-                         function (L) nrow (L $ local))
+            k <- 4
+            m <- 109 
+            C <- solve(vcvPhylo(Tree [[5]]))
+            ni <- laply (OneDef, function (L) nrow (L $ local))
             ni_max <- max(ni)
             X <- array (0, c(m, ni_max, k))
             for (i in 1:m)
-              X[i, 1:ni[i], ] <- OneDef[[i+26]] $ local
-            n_fac <- 4
-            ###  decomposition
-            a1W <- 2; b1W <- 1 # shrinkageW
-            a2W <- 3; b2W <- 1
-            asW <- 3; bsW <- 1
-            a1B <- 2; b1B <- 1 # shrinkageB
-            a2B <- 3; b2B <- 1
-            asB <- 3; bsB <- 1
-            niW <- max(ni); niB <- 11
+              X[i, 1:ni[i], ] <-
+                as.matrix (subset (allo.Data $ onedef.df,
+                                   animal == Tree [[1]] $ tip.label [i]) [, 3:6])
           })
   
 fail.model <-
   failwith(NULL, function (i)
-           stan('../Stan/oneSigma_Anc_runcie.stan', data = data,
+           stan('../Stan/oneSigma_Anc.stan', data = data,
                 pars = c('terminal', 'ancestor', 'root',
-                  'LambdaW', 'LambdaB', 'PsiW', 'PsiB','SigmaW', 'SigmaB',
-                  'deltaW', 'deltaB', 'phiW', 'phiB'),
+                  'SigmaW', 'SigmaB'),
                 warmup = 1000, iter = 2000, thin = 10, chains = 1,
                 control = list ('chain_id' = i)))
 
-fit <- alply (1:4, 1, fail.model, .parallel = TRUE)
+fit <- alply (1:3, 1, fail.model, .parallel = TRUE)
 
 save (data, fit, file = 'vanillaFlat.RData')
 
